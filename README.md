@@ -22,7 +22,7 @@ Issues must be reported in [Request tracker of the Tuleap project](https://tulea
 Configure Jenkins to accept a tuleap dev environment certificate
 
     echo -n | openssl s_client -connect tuleap-web.tuleap-aio-dev.docker:443 |    sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'  >> /usr/local/share/ca-certificates/tuleap-web.tuleap-aio-dev.docker.crt
-    keytool -keystore {$JAVA_HOME}/jre/lib/security/cacerts   -import -trustcacerts -storepass changeit -noprompt -alias tuleap-web-dev -file /usr/local/share/ca-certificates/tuleap-web.tuleap-aio-dev.docker.crt
+    keytool -keystore $JAVA_HOME/jre/lib/security/cacerts   -import -trustcacerts -storepass changeit -noprompt -alias tuleap-web-dev -file /usr/local/share/ca-certificates/tuleap-web.tuleap-aio-dev.docker.crt
     update-ca-certificates --fresh
 
 ## Build
