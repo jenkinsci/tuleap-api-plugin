@@ -3,7 +3,7 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
     <f:entry title="${%Token}" field="token">
-        <f:password/>
+        <f:password checkMethod="post"/>
     </f:entry>
     <st:include page="id-and-description" class="${descriptor.clazz}"/>
 </j:jelly>

@@ -18,6 +18,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 public class TuleapAccessTokenImpl extends BaseStandardCredentials implements TuleapAccessToken {
 
@@ -75,6 +76,7 @@ public class TuleapAccessTokenImpl extends BaseStandardCredentials implements Tu
             return Messages.TuleapAccessToken_displayName();
         }
 
+        @POST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckToken(@QueryParameter String value) {
             Injector injector = Guice.createInjector(new TuleapApiGuiceModule());
