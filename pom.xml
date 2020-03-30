@@ -17,7 +17,13 @@
     </properties>
     <name>Tuleap API Plugin</name>
     <description>Provides a client for the Tuleap API</description>
-    <url>https://github.com/enalean/tuleap-api-plugin</url>
+    <url>https://github.com/jenkinsci/tuleap-api-plugin</url>
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/tuleap-api-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/tuleap-api-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/tuleap-api-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
     <licenses>
         <license>
             <name>MIT License</name>
