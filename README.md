@@ -1,5 +1,9 @@
 # tuleap-api-plugin
 
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/tuleap-api.svg)](https://plugins.jenkins.io/tuleap-api/)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/tuleap-api.svg?label=changelog)](https://plugins.jenkins.io/tuleap-api/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/tuleap-api.svg?color=blue)](https://plugins.jenkins.io/tuleap-api/)
+
 This jenkins plugin provides a client for the Tuleap API. It is the result of the extraction of the client and server configuration of
 [tuleap-gitbranch-source](https://github.com/jenkinsci/tuleap-git-branch-source-plugin/) for separation concerns and reuse in future Jenkins
 plugins for Tuleap.
