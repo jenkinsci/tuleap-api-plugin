@@ -12,9 +12,11 @@ import io.jenkins.plugins.tuleap_api.client.authentication.*;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.OpenIdDiscoveryEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.UserInfoEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.checks.HeaderAuthenticationChecker;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
-import io.jenkins.plugins.tuleap_api.client.internals.exceptions.MalformedHeaderException;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
@@ -24,32 +26,38 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoApi, OpenIDClientApi {
+public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenApi, OpenIDClientApi {
 
-    public static final Logger LOGGER = Logger.getLogger(TuleapAuthenticationApiClient.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(TuleapAuthenticationApiAuthenticationClient.class.getName());
 
     private final PluginHelper pluginHelper;
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
     private final UrlJwkProvider jwkProvider;
     private final TuleapConfiguration tuleapConfiguration;
-    private final HeaderAuthenticationChecker headerAuthenticationChecker;
+    private final HeaderAuthenticationValidator headerAuthenticationValidator;
+    private final AccessTokenValidator accessTokenValidator;
+    private final UserInfoValidator userInfoValidator;
 
     @Inject
-    public TuleapAuthenticationApiClient(
+    public TuleapAuthenticationApiAuthenticationClient(
         PluginHelper pluginHelper,
         OkHttpClient client,
         ObjectMapper objectMapper,
         UrlJwkProvider jwkProvider,
         TuleapConfiguration tuleapConfiguration,
-        HeaderAuthenticationChecker headerAuthenticationChecker
+        HeaderAuthenticationValidator headerAuthenticationValidator,
+        AccessTokenValidator accessTokenValidator,
+        UserInfoValidator userInfoValidator
     ) {
         this.pluginHelper = pluginHelper;
         this.client = client;
         this.objectMapper = objectMapper;
         this.jwkProvider = jwkProvider;
         this.tuleapConfiguration = tuleapConfiguration;
-        this.headerAuthenticationChecker = headerAuthenticationChecker;
+        this.headerAuthenticationValidator = headerAuthenticationValidator;
+        this.accessTokenValidator = accessTokenValidator;
+        this.userInfoValidator = userInfoValidator;
     }
 
     @Override
@@ -66,9 +74,12 @@ public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoAp
             if (!response.isSuccessful()) {
                 throw new InvalidTuleapResponseException(response);
             }
-            this.headerAuthenticationChecker.checkAccessTokenHeader(response);
-            return this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
-        } catch (IOException | InvalidTuleapResponseException | MalformedHeaderException exception) {
+            this.headerAuthenticationValidator.validateHeader(response);
+            this.accessTokenValidator.validateAccessTokenHeader(response);
+            AccessToken accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
+            this.accessTokenValidator.validateAccessTokenBody(accessToken);
+            return accessToken;
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException exception) {
             LOGGER.severe(exception.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
@@ -97,7 +108,6 @@ public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoAp
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<Jwk> getSigningKeys() {
         try {
             return ImmutableList.copyOf(this.jwkProvider.getAll());
@@ -111,7 +121,7 @@ public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoAp
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public UserInfo getUserInfo(AccessToken accessToken) {
         Request req = new Request.Builder()
-            .url(this.tuleapConfiguration.getDomainUrl() + UserInfoApi.USER_INFO_ENDPOINT)
+            .url(this.tuleapConfiguration.getDomainUrl() + OpenIDClientApi.USER_INFO_API)
             .addHeader("Authorization", "Bearer " + accessToken.getAccessToken())
             .get()
             .build();
@@ -120,10 +130,12 @@ public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoAp
             if (!response.isSuccessful()) {
                 throw new InvalidTuleapResponseException(response);
             }
-            this.headerAuthenticationChecker.checkUserInfoHandshake(response);
-            this.headerAuthenticationChecker.checkResponseHeader(response);
-            return this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), UserInfoEntity.class);
-        } catch (IOException | InvalidTuleapResponseException | MalformedHeaderException e) {
+            this.headerAuthenticationValidator.validateHeader(response);
+            this.userInfoValidator.validateUserInfoHandshake(response);
+            UserInfo userInfo = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), UserInfoEntity.class);
+            this.userInfoValidator.validateUserInfoResponseBody(userInfo);
+            return userInfo;
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException e) {
             LOGGER.severe(e.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }
@@ -134,7 +146,7 @@ public class TuleapAuthenticationApiClient implements AccessTokenApi, UserInfoAp
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public String getProviderIssuer() {
         Request req = new Request.Builder()
-            .url(this.tuleapConfiguration.getDomainUrl() + DISCOVERY_API)
+            .url(this.tuleapConfiguration.getDomainUrl() + OpenIDClientApi.DISCOVERY_API)
             .get()
             .build();
         try (Response response = this.client.newCall(req).execute()) {

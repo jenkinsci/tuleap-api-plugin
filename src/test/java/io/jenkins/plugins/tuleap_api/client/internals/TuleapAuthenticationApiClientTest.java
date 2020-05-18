@@ -10,7 +10,9 @@ import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.OpenIdDiscoveryEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.UserInfoEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.checks.HeaderAuthenticationChecker;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import jenkins.model.Jenkins;
@@ -34,7 +36,9 @@ public class TuleapAuthenticationApiClientTest {
     private ObjectMapper objectMapper;
     private UrlJwkProvider jwkProvider;
     private TuleapConfiguration tuleapConfiguration;
-    private HeaderAuthenticationChecker headerAuthenticationChecker;
+    private HeaderAuthenticationValidator headerAuthenticationChecker;
+    private AccessTokenValidator accessTokenValidator;
+    private UserInfoValidator userInfoValidator;
 
     @Before
     public void setUp() {
@@ -43,7 +47,9 @@ public class TuleapAuthenticationApiClientTest {
         this.objectMapper = mock(ObjectMapper.class);
         this.jwkProvider = mock(UrlJwkProvider.class);
         this.tuleapConfiguration = mock(TuleapConfiguration.class);
-        this.headerAuthenticationChecker = mock(HeaderAuthenticationChecker.class);
+        this.headerAuthenticationChecker = mock(HeaderAuthenticationValidator.class);
+        this.accessTokenValidator = mock(AccessTokenValidator.class);
+        this.userInfoValidator = mock(UserInfoValidator.class);
     }
 
     @Test(expected = RuntimeException.class)
@@ -55,13 +61,15 @@ public class TuleapAuthenticationApiClientTest {
         when(this.client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         Secret secret = Secret.fromString("1234");
@@ -89,13 +97,15 @@ public class TuleapAuthenticationApiClientTest {
         AccessTokenEntity expectedAccessToken = new AccessTokenEntity("access","3600","id_token","bearer");
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class)).thenReturn(expectedAccessToken);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         Secret secret = mock(Secret.class);
@@ -109,13 +119,15 @@ public class TuleapAuthenticationApiClientTest {
     public void testItShouldReturnsNoSigningKey() throws SigningKeyNotFoundException {
         when(this.jwkProvider.getAll()).thenThrow(SigningKeyNotFoundException.class);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         assertEquals(ImmutableList.of(), authenticationApiClient.getSigningKeys());
@@ -128,13 +140,15 @@ public class TuleapAuthenticationApiClientTest {
 
         when(this.jwkProvider.getAll()).thenReturn(Arrays.asList(key1, key2));
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         assertEquals(ImmutableList.copyOf(Arrays.asList(key1, key2)), authenticationApiClient.getSigningKeys());
@@ -154,13 +168,15 @@ public class TuleapAuthenticationApiClientTest {
         when(this.client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
         authenticationApiClient.getUserInfo(accessToken);
     }
@@ -186,13 +202,15 @@ public class TuleapAuthenticationApiClientTest {
         UserInfoEntity expectedUserInfo = new UserInfoEntity("102", "https://example.com");
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), UserInfoEntity.class)).thenReturn(expectedUserInfo);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         assertEquals(expectedUserInfo, authenticationApiClient.getUserInfo(accessToken));
@@ -209,13 +227,15 @@ public class TuleapAuthenticationApiClientTest {
         when(this.client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         authenticationApiClient.getProviderIssuer();
@@ -242,13 +262,15 @@ public class TuleapAuthenticationApiClientTest {
         OpenIdDiscoveryEntity configuration = new OpenIdDiscoveryEntity("https://example.com");
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(),OpenIdDiscoveryEntity.class)).thenReturn(configuration);
 
-        TuleapAuthenticationApiClient authenticationApiClient = new TuleapAuthenticationApiClient(
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
             this.client,
             this.objectMapper,
             this.jwkProvider,
             this.tuleapConfiguration,
-            this.headerAuthenticationChecker
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
         );
 
         assertEquals("https://example.com", authenticationApiClient.getProviderIssuer());

@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface OpenIDClientApi {
     String DISCOVERY_API = "/.well-known/openid-configuration";
+    String USER_INFO_API = "/oauth2/userinfo";
 
     List<Jwk> getSigningKeys();
 
