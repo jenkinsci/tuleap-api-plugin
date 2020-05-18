@@ -96,7 +96,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 .readValue(Objects.requireNonNull(response.body()).string(), UserEntity.class);
 
         } catch (IOException | InvalidTuleapResponseException exception) {
-            LOGGER.severe(exception.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }

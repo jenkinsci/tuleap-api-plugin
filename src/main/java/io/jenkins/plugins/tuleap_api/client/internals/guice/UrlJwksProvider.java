@@ -9,12 +9,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 
-public class JwksProvider implements Provider<UrlJwkProvider> {
+public class UrlJwksProvider implements Provider<UrlJwkProvider> {
 
     private TuleapConfiguration tuleapConfiguration;
 
     @Inject
-    public JwksProvider(TuleapConfiguration tuleapConfiguration){
+    public UrlJwksProvider(TuleapConfiguration tuleapConfiguration){
         this.tuleapConfiguration = tuleapConfiguration;
     }
 

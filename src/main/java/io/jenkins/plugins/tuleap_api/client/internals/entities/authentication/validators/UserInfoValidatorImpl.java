@@ -24,7 +24,6 @@ public class UserInfoValidatorImpl implements UserInfoValidator {
     @Override
     public void validateUserInfoHandshake(Response response) throws InvalidHeaderException {
         if (response.handshake() == null) {
-            LOGGER.severe("TLS is not used");
             throw new InvalidHeaderException("TLS is not used");
         }
     }

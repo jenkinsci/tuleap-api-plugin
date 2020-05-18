@@ -16,12 +16,10 @@ public class HeaderAuthenticationValidatorImpl implements HeaderAuthenticationVa
     public void validateHeader(Response response) throws InvalidHeaderException {
         String contentType = response.header("Content-type");
         if (StringUtils.isBlank(contentType)) {
-            LOGGER.severe("There is no content type");
             throw new InvalidHeaderException("There is no content type");
         }
 
         if (!contentType.toLowerCase().equals(CONTENT_TYPE_HEADER_VALUE.toLowerCase())) {
-            LOGGER.severe("Bad content type value" + contentType);
             throw new InvalidHeaderException("Bad content type value");
         }
     }

@@ -80,7 +80,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             this.accessTokenValidator.validateAccessTokenBody(accessToken);
             return accessToken;
         } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException exception) {
-            LOGGER.severe(exception.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }
@@ -136,7 +135,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             this.userInfoValidator.validateUserInfoResponseBody(userInfo);
             return userInfo;
         } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException e) {
-            LOGGER.severe(e.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }
     }
@@ -159,7 +157,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             );
             return configuration.getIssuer();
         } catch (IOException | InvalidTuleapResponseException e) {
-            LOGGER.severe(e.getMessage());
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }
     }
