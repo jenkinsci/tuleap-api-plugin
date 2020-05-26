@@ -7,10 +7,14 @@ public interface AccessTokenApi {
     String ACCESS_TOKEN_CONTENT_TYPE = "application/x-www-form-urlencoded";
     String REDIRECT_URI = "securityRealm/finishLogin";
 
-    AccessToken getAccessToken(
+    String REFRESH_TOKEN_SCOPES = "read:project read:user_membership openid profile offline_access";
+
+    TokenResponse getAccessToken(
         String codeVerifier,
         String authorizationCode,
         String clientId,
         Secret clientSecret
     );
+
+    AccessToken getRefreshToken(AccessToken accessToken, String clientId, Secret clientSecret);
 }

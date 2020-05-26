@@ -11,10 +11,12 @@ import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.authentication.*;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.OpenIdDiscoveryEntity;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.TokenResponseEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.UserInfoEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
@@ -62,32 +64,9 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public AccessToken getAccessToken(
+    public TokenResponse getAccessToken(
         String codeVerifier,
         String authorizationCode,
-        String clientId,
-        Secret clientSecret
-    ) {
-        Request accessTokenRequest = this.buildAccessTokenRequestBody(authorizationCode, codeVerifier, clientId, clientSecret);
-
-        try (Response response = this.client.newCall(accessTokenRequest).execute()) {
-            if (!response.isSuccessful()) {
-                throw new InvalidTuleapResponseException(response);
-            }
-            this.headerAuthenticationValidator.validateHeader(response);
-            this.accessTokenValidator.validateAccessTokenHeader(response);
-            AccessToken accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
-            this.accessTokenValidator.validateAccessTokenBody(accessToken);
-            return accessToken;
-        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException exception) {
-            throw new RuntimeException("Error while contacting Tuleap server", exception);
-        }
-    }
-
-
-    private Request buildAccessTokenRequestBody(
-        String authorizationCode,
-        String codeVerifier,
         String clientId,
         Secret clientSecret
     ) {
@@ -97,6 +76,55 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             .add("code_verifier", codeVerifier)
             .addEncoded("redirect_uri", this.pluginHelper.getJenkinsInstance().getRootUrl() + AccessTokenApi.REDIRECT_URI)
             .build();
+
+        Request accessTokenRequest = this.buildAccessTokenRequestBody(requestBody, clientId, clientSecret);
+
+        try (Response response = this.client.newCall(accessTokenRequest).execute()) {
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+            this.headerAuthenticationValidator.validateHeader(response);
+            this.accessTokenValidator.validateAccessTokenHeader(response);
+            TokenResponse accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), TokenResponseEntity.class);
+            this.accessTokenValidator.validateAccessTokenBody(accessToken);
+            this.accessTokenValidator.validateIDToken(accessToken);
+            return accessToken;
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException | InvalidIDTokenException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public AccessToken getRefreshToken(AccessToken accessToken, String clientId, Secret clientSecret) {
+        RequestBody requestBody = new FormBody.Builder()
+            .add("grant_type", "refresh_token")
+            .add("refresh_token", accessToken.getRefreshToken())
+            .addEncoded("scope", AccessTokenApi.REFRESH_TOKEN_SCOPES)
+            .build();
+
+        Request refreshTokenRequest = this.buildAccessTokenRequestBody(requestBody, clientId, clientSecret);
+
+        try (Response response = this.client.newCall(refreshTokenRequest).execute()) {
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+            this.headerAuthenticationValidator.validateHeader(response);
+            this.accessTokenValidator.validateAccessTokenHeader(response);
+            AccessToken refreshToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
+            this.accessTokenValidator.validateAccessTokenBody(refreshToken);
+            return refreshToken;
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+
+    private Request buildAccessTokenRequestBody(
+        RequestBody requestBody,
+        String clientId,
+        Secret clientSecret
+    ) {
 
         return new Request.Builder()
             .url(this.tuleapConfiguration.getDomainUrl() + ACCESS_TOKEN_API)

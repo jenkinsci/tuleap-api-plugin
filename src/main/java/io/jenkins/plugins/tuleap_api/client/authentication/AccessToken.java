@@ -8,5 +8,5 @@ public interface AccessToken {
 
     String getExpiresIn();
 
-    String getIdToken();
+    String getRefreshToken();
 }
