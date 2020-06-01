@@ -9,4 +9,6 @@ public interface AccessToken {
     String getExpiresIn();
 
     String getRefreshToken();
+
+    String getIdToken();
 }

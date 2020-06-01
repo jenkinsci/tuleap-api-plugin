@@ -11,17 +11,20 @@ public class AccessTokenEntity implements AccessToken {
     private String tokenType;
     private String expiresIn;
     private String refreshToken;
+    private String idToken;
 
     public AccessTokenEntity(
         @JsonProperty("access_token") String accessToken,
         @JsonProperty("token_type") String tokenType,
         @JsonProperty("expires_in") String expiresIn,
-        @JsonProperty("refresh_token") String refreshToken
+        @JsonProperty("refresh_token") String refreshToken,
+        @JsonProperty("id_token") String idToken
     ) {
         this.accessToken = accessToken;
         this.tokenType = tokenType;
         this.expiresIn = expiresIn;
         this.refreshToken = refreshToken;
+        this.idToken = idToken;
     }
 
     @Override
@@ -42,5 +45,10 @@ public class AccessTokenEntity implements AccessToken {
     @Override
     public String getRefreshToken() {
         return this.refreshToken;
+    }
+
+    @Override
+    public String getIdToken() {
+        return this.idToken;
     }
 }

@@ -9,12 +9,12 @@ public interface AccessTokenApi {
 
     String REFRESH_TOKEN_SCOPES = "read:project read:user_membership openid profile offline_access";
 
-    TokenResponse getAccessToken(
+    AccessToken getAccessToken(
         String codeVerifier,
         String authorizationCode,
         String clientId,
         Secret clientSecret
     );
 
-    AccessToken getRefreshToken(AccessToken accessToken, String clientId, Secret clientSecret);
+    AccessToken refreshToken(AccessToken accessToken, String clientId, Secret clientSecret);
 }

@@ -1,7 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators;
 
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
-import io.jenkins.plugins.tuleap_api.client.authentication.TokenResponse;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import okhttp3.Response;
@@ -51,7 +50,7 @@ public class AccessTokenValidatorImpl implements AccessTokenValidator {
     }
 
     @Override
-    public void validateIDToken(TokenResponse accessToken) throws InvalidIDTokenException {
+    public void validateIDToken(AccessToken accessToken) throws InvalidIDTokenException {
         if (StringUtils.isBlank(accessToken.getIdToken())) {
             throw new InvalidIDTokenException("No id token returned");
         }

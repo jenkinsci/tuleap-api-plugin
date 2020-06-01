@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
-import io.jenkins.plugins.tuleap_api.client.authentication.TokenResponse;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.OpenIdDiscoveryEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.TokenResponseEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.UserInfoEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
@@ -95,10 +93,10 @@ public class TuleapAuthenticationApiClientTest {
 
         ResponseBody responseBody = mock(ResponseBody.class);
         when(response.body()).thenReturn(responseBody);
-        when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer}");
+        when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer, refresh_token: refresh}");
 
-        TokenResponseEntity expectedAccessToken = new TokenResponseEntity("access","3600","id_token","bearer","refresh");
-        when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), TokenResponseEntity.class)).thenReturn(expectedAccessToken);
+        AccessTokenEntity expectedAccessToken = new AccessTokenEntity("access","bearer","3600","refresh","id_token");
+        when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class)).thenReturn(expectedAccessToken);
 
         TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
             this.pluginHelper,
@@ -114,7 +112,7 @@ public class TuleapAuthenticationApiClientTest {
         Secret secret = mock(Secret.class);
         when(secret.getPlainText()).thenReturn("12434");
 
-        TokenResponse accessToken = authenticationApiClient.getAccessToken("1234", "auth", "12374", secret);
+        AccessToken accessToken = authenticationApiClient.getAccessToken("1234", "auth", "12374", secret);
         assertEquals(expectedAccessToken, accessToken);
         verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenHeader(response);
         verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenBody(accessToken);
@@ -145,7 +143,7 @@ public class TuleapAuthenticationApiClientTest {
 
         AccessToken accessToken = mock(AccessToken.class);
 
-        authenticationApiClient.getRefreshToken(accessToken,"1234",  secret);
+        authenticationApiClient.refreshToken(accessToken,"1234",  secret);
         verify(this.accessTokenValidator, never()).validateAccessTokenHeader(response);
         verify(this.accessTokenValidator, never()).validateAccessTokenBody(any());
         verify(this.accessTokenValidator, never()).validateIDToken(any());
@@ -169,7 +167,7 @@ public class TuleapAuthenticationApiClientTest {
         when(response.body()).thenReturn(responseBody);
         when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer}");
 
-        AccessTokenEntity expectedRefreshToken = new AccessTokenEntity("access","3600","bearer","refresh");
+        AccessTokenEntity expectedRefreshToken = new AccessTokenEntity("access","3600","bearer","refresh", null);
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class)).thenReturn(expectedRefreshToken);
 
         TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
@@ -189,7 +187,7 @@ public class TuleapAuthenticationApiClientTest {
         AccessToken accessToken = mock(AccessToken.class);
         when(accessToken.getRefreshToken()).thenReturn("refresh_token");
 
-        AccessToken refreshToken = authenticationApiClient.getRefreshToken(accessToken,"1234",  secret);
+        AccessToken refreshToken = authenticationApiClient.refreshToken(accessToken,"1234",  secret);
 
         assertEquals(expectedRefreshToken, refreshToken);
         verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenHeader(response);

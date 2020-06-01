@@ -11,7 +11,6 @@ import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.authentication.*;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.OpenIdDiscoveryEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.TokenResponseEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.UserInfoEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
@@ -64,7 +63,7 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public TokenResponse getAccessToken(
+    public AccessToken getAccessToken(
         String codeVerifier,
         String authorizationCode,
         String clientId,
@@ -85,7 +84,7 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             }
             this.headerAuthenticationValidator.validateHeader(response);
             this.accessTokenValidator.validateAccessTokenHeader(response);
-            TokenResponse accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), TokenResponseEntity.class);
+            AccessToken accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
             this.accessTokenValidator.validateAccessTokenBody(accessToken);
             this.accessTokenValidator.validateIDToken(accessToken);
             return accessToken;
@@ -96,7 +95,7 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public AccessToken getRefreshToken(AccessToken accessToken, String clientId, Secret clientSecret) {
+    public AccessToken refreshToken(AccessToken accessToken, String clientId, Secret clientSecret) {
         RequestBody requestBody = new FormBody.Builder()
             .add("grant_type", "refresh_token")
             .add("refresh_token", accessToken.getRefreshToken())
