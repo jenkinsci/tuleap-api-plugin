@@ -13,6 +13,8 @@ import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.Us
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import jenkins.model.Jenkins;
@@ -26,8 +28,7 @@ import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TuleapAuthenticationApiClientTest {
 
@@ -77,7 +78,7 @@ public class TuleapAuthenticationApiClientTest {
     }
 
     @Test
-    public void testItReturnsTheAccessToken() throws IOException {
+    public void testItReturnsTheAccessToken() throws IOException, InvalidHeaderException, InvalidIDTokenException {
         Jenkins jenkins = mock(Jenkins.class);
         when(this.pluginHelper.getJenkinsInstance()).thenReturn(jenkins);
         when(jenkins.getRootUrl()).thenReturn("https://jenkins.example.com");
@@ -92,9 +93,9 @@ public class TuleapAuthenticationApiClientTest {
 
         ResponseBody responseBody = mock(ResponseBody.class);
         when(response.body()).thenReturn(responseBody);
-        when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer}");
+        when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer, refresh_token: refresh}");
 
-        AccessTokenEntity expectedAccessToken = new AccessTokenEntity("access","3600","id_token","bearer");
+        AccessTokenEntity expectedAccessToken = new AccessTokenEntity("access","bearer","3600","refresh","id_token");
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class)).thenReturn(expectedAccessToken);
 
         TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
@@ -113,6 +114,85 @@ public class TuleapAuthenticationApiClientTest {
 
         AccessToken accessToken = authenticationApiClient.getAccessToken("1234", "auth", "12374", secret);
         assertEquals(expectedAccessToken, accessToken);
+        verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenHeader(response);
+        verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenBody(accessToken);
+        verify(this.accessTokenValidator, atMostOnce()).validateIDToken(accessToken);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testItThrowsExceptionsIfTheRefreshtokenResponseFailed() throws IOException, InvalidHeaderException, InvalidIDTokenException {
+        Response response = mock(Response.class);
+        when(response.isSuccessful()).thenReturn(false);
+
+        Call call = mock(Call.class);
+        when(this.client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
+            this.pluginHelper,
+            this.client,
+            this.objectMapper,
+            this.jwkProvider,
+            this.tuleapConfiguration,
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
+        );
+
+        Secret secret = Secret.fromString("1234");
+
+        AccessToken accessToken = mock(AccessToken.class);
+
+        authenticationApiClient.refreshToken(accessToken,"1234",  secret);
+        verify(this.accessTokenValidator, never()).validateAccessTokenHeader(response);
+        verify(this.accessTokenValidator, never()).validateAccessTokenBody(any());
+        verify(this.accessTokenValidator, never()).validateIDToken(any());
+    }
+
+    @Test
+    public void testItReturnsTheRefreshToken() throws IOException, InvalidHeaderException, InvalidIDTokenException {
+        Jenkins jenkins = mock(Jenkins.class);
+        when(this.pluginHelper.getJenkinsInstance()).thenReturn(jenkins);
+        when(jenkins.getRootUrl()).thenReturn("https://jenkins.example.com");
+        when(this.tuleapConfiguration.getDomainUrl()).thenReturn("https://tuleap.example.com");
+
+        Response response = mock(Response.class);
+        when(response.isSuccessful()).thenReturn(true);
+
+        Call call = mock(Call.class);
+        when(this.client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+
+        ResponseBody responseBody = mock(ResponseBody.class);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn("{access_token:access, expires_in:3600, id_token:id_token, token_type: bearer}");
+
+        AccessTokenEntity expectedRefreshToken = new AccessTokenEntity("access","3600","bearer","refresh", null);
+        when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class)).thenReturn(expectedRefreshToken);
+
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
+            this.pluginHelper,
+            this.client,
+            this.objectMapper,
+            this.jwkProvider,
+            this.tuleapConfiguration,
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
+        );
+
+        Secret secret = mock(Secret.class);
+        when(secret.getPlainText()).thenReturn("12434");
+
+        AccessToken accessToken = mock(AccessToken.class);
+        when(accessToken.getRefreshToken()).thenReturn("refresh_token");
+
+        AccessToken refreshToken = authenticationApiClient.refreshToken(accessToken,"1234",  secret);
+
+        assertEquals(expectedRefreshToken, refreshToken);
+        verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenHeader(response);
+        verify(this.accessTokenValidator, atMostOnce()).validateAccessTokenBody(refreshToken);
+        verify(this.accessTokenValidator, never()).validateIDToken(any());
     }
 
     @Test
@@ -275,5 +355,4 @@ public class TuleapAuthenticationApiClientTest {
 
         assertEquals("https://example.com", authenticationApiClient.getProviderIssuer());
     }
-
 }

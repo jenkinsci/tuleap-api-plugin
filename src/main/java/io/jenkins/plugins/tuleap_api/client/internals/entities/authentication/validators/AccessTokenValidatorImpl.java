@@ -2,6 +2,7 @@ package io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.v
 
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import okhttp3.Response;
 import org.apache.commons.lang.StringUtils;
 
@@ -46,9 +47,12 @@ public class AccessTokenValidatorImpl implements AccessTokenValidator {
         if (StringUtils.isBlank(accessToken.getExpiresIn())) {
             throw new InvalidHeaderException("No expiration date returned");
         }
+    }
 
+    @Override
+    public void validateIDToken(AccessToken accessToken) throws InvalidIDTokenException {
         if (StringUtils.isBlank(accessToken.getIdToken())) {
-            throw new InvalidHeaderException("No id token returned");
+            throw new InvalidIDTokenException("No id token returned");
         }
     }
 }

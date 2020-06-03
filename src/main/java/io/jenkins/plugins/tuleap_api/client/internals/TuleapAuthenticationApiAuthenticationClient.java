@@ -15,6 +15,7 @@ import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.Us
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.AccessTokenValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.HeaderAuthenticationValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
@@ -68,7 +69,14 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
         String clientId,
         Secret clientSecret
     ) {
-        Request accessTokenRequest = this.buildAccessTokenRequestBody(authorizationCode, codeVerifier, clientId, clientSecret);
+        RequestBody requestBody = new FormBody.Builder()
+            .add("grant_type", "authorization_code")
+            .add("code", authorizationCode)
+            .add("code_verifier", codeVerifier)
+            .addEncoded("redirect_uri", this.pluginHelper.getJenkinsInstance().getRootUrl() + AccessTokenApi.REDIRECT_URI)
+            .build();
+
+        Request accessTokenRequest = this.buildAccessTokenRequestBody(requestBody, clientId, clientSecret);
 
         try (Response response = this.client.newCall(accessTokenRequest).execute()) {
             if (!response.isSuccessful()) {
@@ -78,7 +86,33 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             this.accessTokenValidator.validateAccessTokenHeader(response);
             AccessToken accessToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
             this.accessTokenValidator.validateAccessTokenBody(accessToken);
+            this.accessTokenValidator.validateIDToken(accessToken);
             return accessToken;
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException | InvalidIDTokenException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public AccessToken refreshToken(AccessToken accessToken, String clientId, Secret clientSecret) {
+        RequestBody requestBody = new FormBody.Builder()
+            .add("grant_type", "refresh_token")
+            .add("refresh_token", accessToken.getRefreshToken())
+            .addEncoded("scope", AccessTokenApi.REFRESH_TOKEN_SCOPES)
+            .build();
+
+        Request refreshTokenRequest = this.buildAccessTokenRequestBody(requestBody, clientId, clientSecret);
+
+        try (Response response = this.client.newCall(refreshTokenRequest).execute()) {
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+            this.headerAuthenticationValidator.validateHeader(response);
+            this.accessTokenValidator.validateAccessTokenHeader(response);
+            AccessToken refreshToken = this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), AccessTokenEntity.class);
+            this.accessTokenValidator.validateAccessTokenBody(refreshToken);
+            return refreshToken;
         } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException exception) {
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
@@ -86,17 +120,10 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
 
 
     private Request buildAccessTokenRequestBody(
-        String authorizationCode,
-        String codeVerifier,
+        RequestBody requestBody,
         String clientId,
         Secret clientSecret
     ) {
-        RequestBody requestBody = new FormBody.Builder()
-            .add("grant_type", "authorization_code")
-            .add("code", authorizationCode)
-            .add("code_verifier", codeVerifier)
-            .addEncoded("redirect_uri", this.pluginHelper.getJenkinsInstance().getRootUrl() + AccessTokenApi.REDIRECT_URI)
-            .build();
 
         return new Request.Builder()
             .url(this.tuleapConfiguration.getDomainUrl() + ACCESS_TOKEN_API)
