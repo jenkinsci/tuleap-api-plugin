@@ -1,0 +1,17 @@
+{
+  "id": "113_3",
+  "uri": "user_groups/113_3",
+  "label": "Project members",
+  "users_uri": "user_groups/113_3/users",
+  "short_name": "project_members",
+  "key": "ugroup_project_members_name_key",
+  "project": {
+    "id": 113,
+    "uri": "projects/113",
+    "label": "git-test",
+    "shortname": "git-test",
+    "status": "active",
+    "access": "private",
+    "is_template": true
+  }
+}
