@@ -1,0 +1,17 @@
+{
+  "id": "106_3",
+  "uri": "user_groups/106_3",
+  "label": "Project members",
+  "users_uri": "user_groups/106_3/users",
+  "short_name": "project_members",
+  "key": "ugroup_project_members_name_key",
+  "project": {
+    "id": 106,
+    "uri": "projects/106",
+    "label": "coincoin",
+    "shortname": "coincoin",
+    "status": "active",
+    "access": "public",
+    "is_template": false
+  }
+}
