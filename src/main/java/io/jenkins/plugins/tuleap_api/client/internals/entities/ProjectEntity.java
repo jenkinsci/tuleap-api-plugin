@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.tuleap_api.client.Project;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProjectEntity implements Project {
+public class ProjectEntity{
 
     private String shortname;
 
@@ -13,7 +13,6 @@ public class ProjectEntity implements Project {
         this.shortname = shortname;
     }
 
-    @Override
     public String getShortname() {
         return this.shortname;
     }
