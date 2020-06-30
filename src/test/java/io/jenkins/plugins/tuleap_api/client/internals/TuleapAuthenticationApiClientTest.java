@@ -279,7 +279,7 @@ public class TuleapAuthenticationApiClientTest {
         when(response.body()).thenReturn(responseBody);
         when(responseBody.string()).thenReturn("{sub: 102, issuer:https://example.com}");
 
-        UserInfoEntity expectedUserInfo = new UserInfoEntity("102", "https://example.com");
+        UserInfoEntity expectedUserInfo = new UserInfoEntity("102", "rs", "Renn Sport", "rs@vroomvroomm.example.com", true );
         when(this.objectMapper.readValue(Objects.requireNonNull(response.body()).string(), UserInfoEntity.class)).thenReturn(expectedUserInfo);
 
         TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
