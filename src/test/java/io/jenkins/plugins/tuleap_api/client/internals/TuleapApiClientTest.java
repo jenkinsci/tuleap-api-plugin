@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
+import io.jenkins.plugins.tuleap_api.client.Project;
 import io.jenkins.plugins.tuleap_api.client.UserGroup;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
+import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.ProjectEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
@@ -163,9 +165,9 @@ public class TuleapApiClientTest {
             .thenReturn(jsonUserGroupsPayload2)
             .thenReturn(jsonUserGroupsPayload3);
 
-        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin"));
-        UserGroup userGroup2 = new UserGroupEntity("project_admins", new ProjectEntity("coincoin"));
-        UserGroup userGroup3 = new UserGroupEntity("project_members", new ProjectEntity("git-test"));
+        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
+        UserGroup userGroup2 = new UserGroupEntity("project_admins", new ProjectEntity("coincoin", 22));
+        UserGroup userGroup3 = new UserGroupEntity("project_members", new ProjectEntity("git-test", 33));
 
         List<UserGroup> expectedList = ImmutableList.of(userGroup1, userGroup2, userGroup3);
 
@@ -207,9 +209,87 @@ public class TuleapApiClientTest {
         when(responseBody.string())
             .thenReturn(jsonUserGroupsPayload);
 
-        UserGroup expectedUserGroup = new UserGroupEntity("project_members", new ProjectEntity("coincoin"));
+        UserGroup expectedUserGroup = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
         UserGroup resultUserGroup = tuleapApiClient.getUserGroup("106_3", accessToken);
         assertEquals(expectedUserGroup.getGroupName(), resultUserGroup.getGroupName());
         assertEquals(expectedUserGroup.getProjectName(), resultUserGroup.getProjectName());
+    }
+
+    @Test (expected = RuntimeException.class)
+    public void itThrowsAnExceptionWhenProjectsCannotBeRetrieved() throws IOException, ProjectNotFoundException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getProjectByShortname("some-project-shortname", accessToken);
+    }
+
+    @Test (expected = ProjectNotFoundException.class)
+    public void itThrowsAProjectNotFoundExceptionIfProjectCannotBeFound() throws IOException, ProjectNotFoundException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_empty_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(payload);
+
+        tuleapApiClient.getProjectByShortname("some-project-shortname", accessToken);
+    }
+
+    @Test
+    public void itReturnsTheProjectCorrespondingToShortname() throws IOException, ProjectNotFoundException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(payload);
+
+        Project project = tuleapApiClient.getProjectByShortname("use-me", accessToken);
+
+        assertEquals("use-me", project.getShortname());
+    }
+
+    @Test (expected = RuntimeException.class)
+    public void itThrowsAnExceptionWhenProjectUserGroupsCannotBeRetrieved() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getProjectUserGroups(20, accessToken);
+    }
+
+    @Test
+    public void itShouldReturnProjectUserGroups() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_usergroups_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(payload);
+
+        ImmutableList<UserGroup> userGroups = tuleapApiClient.getProjectUserGroups(20, accessToken);
+
+        assertEquals(8, userGroups.size());
     }
 }

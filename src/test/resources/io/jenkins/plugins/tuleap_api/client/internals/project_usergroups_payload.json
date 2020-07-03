@@ -1,0 +1,66 @@
+[
+  {
+    "id": "118_3",
+    "uri": "user_groups/118_3",
+    "label": "Project members",
+    "users_uri": "user_groups/118_3/users",
+    "short_name": "project_members",
+    "key": "ugroup_project_members_name_key"
+  },
+  {
+    "id": "118_4",
+    "uri": "user_groups/118_4",
+    "label": "Project administrators",
+    "users_uri": "user_groups/118_4/users",
+    "short_name": "project_admins",
+    "key": "ugroup_project_admins_name_key"
+  },
+  {
+    "id": "118_11",
+    "uri": "user_groups/118_11",
+    "label": "file_manager_admins",
+    "users_uri": "user_groups/118_11/users",
+    "short_name": "file_manager_admins",
+    "key": "ugroup_file_manager_admin_name_key"
+  },
+  {
+    "id": "118_14",
+    "uri": "user_groups/118_14",
+    "label": "Wiki administrators",
+    "users_uri": "user_groups/118_14/users",
+    "short_name": "wiki_admins",
+    "key": "ugroup_wiki_admin_name_key"
+  },
+  {
+    "id": "118_16",
+    "uri": "user_groups/118_16",
+    "label": "Forum moderators",
+    "users_uri": "user_groups/118_16/users",
+    "short_name": "forum_admins",
+    "key": "ugroup_forum_admin_name_key"
+  },
+  {
+    "id": "118_17",
+    "uri": "user_groups/118_17",
+    "label": "News administrators",
+    "users_uri": "user_groups/118_17/users",
+    "short_name": "news_admins",
+    "key": "ugroup_news_admin_name_key"
+  },
+  {
+    "id": "118_18",
+    "uri": "user_groups/118_18",
+    "label": "News writers",
+    "users_uri": "user_groups/118_18/users",
+    "short_name": "news_editors",
+    "key": "ugroup_news_writer_name_key"
+  },
+  {
+    "id": "104",
+    "uri": "user_groups/104",
+    "label": "leGroupeDeTest",
+    "users_uri": "user_groups/104/users",
+    "short_name": "leGroupeDeTest",
+    "key": "leGroupeDeTest"
+  }
+]

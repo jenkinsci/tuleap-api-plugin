@@ -14,5 +14,6 @@ public class TuleapApiGuiceModule extends com.google.inject.AbstractModule {
         bind(AccessKeyApi.class).to(TuleapApiClient.class);
         bind(UserApi.class).to(TuleapApiClient.class);
         bind(UserGroupsApi.class).to(TuleapApiClient.class);
+        bind(ProjectApi.class).to(TuleapApiClient.class);
     }
 }
