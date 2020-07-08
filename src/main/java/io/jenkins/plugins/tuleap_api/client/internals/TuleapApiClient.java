@@ -9,10 +9,7 @@ import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.AccessKeyEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.ProjectEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.UserEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.*;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
@@ -215,7 +212,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
             return ImmutableList.copyOf(this.objectMapper.readValue(
                 Objects.requireNonNull(response.body()).string(),
-                new TypeReference<ImmutableList<UserGroupEntity>>() {}
+                new TypeReference<ImmutableList<MinimalUserGroupEntity>>() {}
             ));
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
