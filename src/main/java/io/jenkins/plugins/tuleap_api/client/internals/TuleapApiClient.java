@@ -8,9 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.AccessKeyEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.UserEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
+import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.*;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
@@ -21,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi {
+public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi {
     private static final Logger LOGGER = Logger.getLogger(TuleapApiClient.class.getName());
 
     private OkHttpClient client;
@@ -158,6 +157,63 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 Objects.requireNonNull(response.body()).string(),
                 UserGroupEntity.class
             );
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public Project getProjectByShortname(String shortname, AccessToken token) throws ProjectNotFoundException {
+        final HttpUrl url = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API))
+            .newBuilder()
+            .addEncodedQueryParameter("limit", "1")
+            .addEncodedQueryParameter("query", String.format("{\"shortname\":\"%s\"}", shortname))
+            .build();
+
+        final Request request = new Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer " + token.getAccessToken())
+            .get()
+            .build();
+
+        try (final Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            final List<ProjectEntity> projects = this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                new TypeReference<List<ProjectEntity>>() {}
+            );
+
+            return projects
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ProjectNotFoundException(shortname));
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public ImmutableList<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token) {
+        final Request request = new Request.Builder()
+            .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId + this.PROJECT_GROUPS)
+            .addHeader("Authorization", "Bearer " + token.getAccessToken())
+            .get()
+            .build();
+
+        try (final Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            return ImmutableList.copyOf(this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                new TypeReference<ImmutableList<MinimalUserGroupEntity>>() {}
+            ));
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }

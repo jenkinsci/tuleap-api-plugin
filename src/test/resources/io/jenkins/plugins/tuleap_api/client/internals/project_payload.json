@@ -1,0 +1,121 @@
+[
+  {
+    "resources": [
+      {
+        "type": "docman_metadata",
+        "uri": "projects/118/docman_metadata"
+      },
+      {
+        "type": "docman_service",
+        "uri": "projects/118/docman_service"
+      },
+      {
+        "type": "trackers",
+        "uri": "projects/118/trackers"
+      },
+      {
+        "type": "backlog",
+        "uri": "projects/118/backlog"
+      },
+      {
+        "type": "milestones",
+        "uri": "projects/118/milestones"
+      },
+      {
+        "type": "plannings",
+        "uri": "projects/118/plannings"
+      },
+      {
+        "type": "git",
+        "uri": "projects/118/git"
+      },
+      {
+        "type": "svn",
+        "uri": "projects/118/svn"
+      },
+      {
+        "type": "testmanagement_campaigns",
+        "uri": "projects/118/testmanagement_campaigns"
+      },
+      {
+        "type": "testmanagement_definitions",
+        "uri": "projects/118/testmanagement_definitions"
+      },
+      {
+        "type": "testmanagement_nodes",
+        "uri": "projects/118/testmanagement_nodes"
+      },
+      {
+        "type": "frs_packages",
+        "uri": "projects/118/frs_packages"
+      },
+      {
+        "type": "frs_service",
+        "uri": "projects/118/frs_service"
+      },
+      {
+        "type": "project_services",
+        "uri": "projects/118/project_services"
+      },
+      {
+        "type": "user_groups",
+        "uri": "projects/118/user_groups"
+      },
+      {
+        "type": "phpwiki",
+        "uri": "projects/118/phpwiki"
+      },
+      {
+        "type": "heartbeats",
+        "uri": "projects/118/heartbeats"
+      },
+      {
+        "type": "labels",
+        "uri": "projects/118/labels"
+      }
+    ],
+    "additional_informations": {
+      "agiledashboard": {
+        "root_planning": {
+          "id": 29,
+          "uri": "route-not-yet-implemented",
+          "label": "Release Planning",
+          "project": {
+            "id": 118,
+            "uri": "projects/118",
+            "label": null
+          },
+          "milestone_tracker": {
+            "id": 155,
+            "uri": "trackers/155",
+            "label": "Releases",
+            "project": {
+              "id": 118,
+              "uri": "projects/118",
+              "label": "Use Me"
+            }
+          },
+          "backlog_trackers": [
+            {
+              "id": 153,
+              "uri": "trackers/153"
+            },
+            {
+              "id": 160,
+              "uri": "trackers/160"
+            }
+          ],
+          "milestones_uri": "plannings/29/milestones"
+        }
+      }
+    },
+    "is_member_of": true,
+    "id": 118,
+    "uri": "projects/118",
+    "label": "Use Me",
+    "shortname": "use-me",
+    "status": "active",
+    "access": "public",
+    "is_template": false
+  }
+]
