@@ -11,4 +11,5 @@ public interface UserApi {
 
     User getUserForAccessKey(Secret secret);
     ImmutableList<UserGroup> getUserMembershipName(AccessToken accessToken);
+    ImmutableList<UserGroup> getUserMembership(AccessToken accessToken);
 }
