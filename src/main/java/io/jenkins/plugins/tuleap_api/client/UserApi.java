@@ -10,6 +10,6 @@ public interface UserApi {
     String USER_SELF_ID = "/self";
 
     User getUserForAccessKey(Secret secret);
-    ImmutableList<UserGroup> getUserMembershipName(AccessToken accessToken);
+    @Deprecated ImmutableList<UserGroup> getUserMembershipName(AccessToken accessToken);
     ImmutableList<UserGroup> getUserMembership(AccessToken accessToken);
 }

@@ -147,6 +147,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public ImmutableList<UserGroup> getUserMembership(AccessToken accessToken) {
         HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
             .newBuilder()
