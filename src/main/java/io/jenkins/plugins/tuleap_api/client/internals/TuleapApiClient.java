@@ -102,9 +102,15 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         }
     }
 
+    /**
+     * @deprecated Use getUserMembership() instead. If you still use this method you should update your Tuleap and use the getUserMembership() which is more efficent.
+     */
+    @Deprecated
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public ImmutableList<UserGroup> getUserMembershipName(AccessToken accessToken) {
+        LOGGER.info("You are using a deprecated method. Please upgrade your Tuleap and use getUserMembership() instead. ");
+
         HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
             .newBuilder()
             .addEncodedQueryParameter("scope", "project")
@@ -138,6 +144,42 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         });
 
         return ImmutableList.copyOf(memberships);
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public ImmutableList<UserGroup> getUserMembership(AccessToken accessToken) {
+        HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
+            .newBuilder()
+            .addEncodedQueryParameter("scope", "project")
+            .addEncodedQueryParameter("format", "full")
+            .build();
+
+        Request req = new Request.Builder()
+            .url(urlUserMembership)
+            .addHeader("Authorization", "Bearer " + accessToken.getAccessToken())
+            .get()
+            .build();
+
+        try (Response response = this.client.newCall(req).execute()) {
+
+            if (response.code() == 400) {
+                return this.getUserMembershipName(accessToken);
+            }
+
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            return ImmutableList.copyOf(
+                this.objectMapper.readValue(
+                    Objects.requireNonNull(response.body()).string(),
+                    new TypeReference<ImmutableList<UserGroupEntity>>() {
+                    }
+                ));
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
     }
 
     @Override

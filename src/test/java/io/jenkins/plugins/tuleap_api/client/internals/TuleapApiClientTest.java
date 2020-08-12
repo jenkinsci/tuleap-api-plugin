@@ -182,6 +182,81 @@ public class TuleapApiClientTest {
         assertEquals(resultList.get(2).getProjectName(), expectedList.get(2).getProjectName());
     }
 
+    @Test
+    public void itShouldCallGetUserMembershipNameIfTheServerReturns400() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(400);
+        when(response.isSuccessful()).thenReturn(true);
+
+        String jsonUserMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_membership_payload.json"), UTF_8.name());
+        String jsonUserGroupsPayload1 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string())
+            .thenReturn(jsonUserMembershipPayload)
+            .thenReturn(jsonUserGroupsPayload1);
+
+        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
+        List<UserGroup> expectedList = ImmutableList.of(userGroup1);
+
+        List<UserGroup> resultList = this.tuleapApiClient.getUserMembership(this.accessToken);
+
+        assertEquals(expectedList.get(0).getGroupName(), resultList.get(0).getGroupName());
+        assertEquals(expectedList.get(0).getProjectName(), resultList.get(0).getProjectName());
+    }
+
+    @Test
+    public void itShouldReturnUserMembership() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        String projectMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_membership_payload.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(404);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string())
+            .thenReturn(projectMembershipPayload);
+
+        UserGroup userMembership1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 106));
+        UserGroup userMembership2 = new UserGroupEntity("atchoum", new ProjectEntity("git-test", 113));
+
+        List<UserGroup> expectedList = ImmutableList.of(userMembership1, userMembership2);
+
+        List<UserGroup> resultList = tuleapApiClient.getUserMembership(this.accessToken);
+
+        assertEquals(expectedList.get(0).getGroupName(), resultList.get(0).getGroupName());
+        assertEquals(expectedList.get(0).getProjectName(), resultList.get(0).getProjectName());
+
+        assertEquals(expectedList.get(1).getGroupName(), resultList.get(1).getGroupName());
+        assertEquals(expectedList.get(1).getProjectName(), resultList.get(1).getProjectName());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itShouldThrowExceptionWhenTheResponseIsNotSuccessfulAtQueryingNewUserMembershipRoute() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(404);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getUserMembership(this.accessToken);
+    }
+
     @Test(expected = RuntimeException.class)
     public void itThrowsExceptionWhenTheUserGroupCannotBeRetrieved() throws IOException {
         Call call = mock(Call.class);
