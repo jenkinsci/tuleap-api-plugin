@@ -1,7 +1,9 @@
 package io.jenkins.plugins.tuleap_api.client.internals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
@@ -20,8 +22,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi {
+public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi , TestCampaignApi {
     private static final Logger LOGGER = Logger.getLogger(TuleapApiClient.class.getName());
+    private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private OkHttpClient client;
 
@@ -257,6 +260,29 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             ));
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    public void sendTTMResults(String campaignId, String buildUrl, List<String> results, Secret secret) {
+        Request request;
+
+        try {
+            request = new Request.Builder()
+                .url(this.tuleapConfiguration.getApiBaseUrl() + this.TEST_CAMPAIGN_API + "/" + campaignId)
+                .addHeader(this.AUTHORIZATION_HEADER, secret.getPlainText())
+                .patch(RequestBody.create(this.objectMapper.writer(SerializationFeature.WRAP_ROOT_VALUE).writeValueAsString(new SendTTMResultsEntity(buildUrl,results)), JSON))
+                .build();
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException("Error while trying to create request for TTM results", exception);
+        }
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+        } catch (IOException | InvalidTuleapResponseException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }
 }
