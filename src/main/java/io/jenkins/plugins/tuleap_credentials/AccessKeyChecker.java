@@ -1,15 +1,18 @@
 package io.jenkins.plugins.tuleap_credentials;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.AccessKeyApi;
 import io.jenkins.plugins.tuleap_api.client.AccessKeyScope;
 import io.jenkins.plugins.tuleap_credentials.exceptions.InvalidAccessKeyException;
 import io.jenkins.plugins.tuleap_credentials.exceptions.InvalidScopesForAccessKeyException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AccessKeyChecker {
-    private static ImmutableList<String> MANDATORY_SCOPES = ImmutableList.of("write:rest", "write:git_repository");
+    private static List<String> MANDATORY_SCOPES = Collections.unmodifiableList(Arrays.asList("write:rest", "write:git_repository"));
 
     private AccessKeyApi client;
 
@@ -37,7 +40,7 @@ public class AccessKeyChecker {
         .getAccessKeyScopes(secret)
         .stream()
         .map(AccessKeyScope::getIdentifier)
-        .collect(ImmutableList.toImmutableList())
+        .collect(Collectors.toList())
         .containsAll(MANDATORY_SCOPES);
     }
 }

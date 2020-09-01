@@ -1,7 +1,7 @@
 package io.jenkins.plugins.tuleap_api.client;
 
-import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
+import java.util.List;
 
 public interface AccessKeyApi {
     String ACCESS_KEY_API = "/access_keys";
@@ -9,5 +9,5 @@ public interface AccessKeyApi {
 
     Boolean checkAccessKeyIsValid(Secret secret);
 
-    ImmutableList<AccessKeyScope> getAccessKeyScopes(Secret secret);
+    List<AccessKeyScope> getAccessKeyScopes(Secret secret);
 }

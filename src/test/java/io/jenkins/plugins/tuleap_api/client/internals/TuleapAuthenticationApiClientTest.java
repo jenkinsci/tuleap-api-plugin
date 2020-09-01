@@ -4,7 +4,6 @@ import com.auth0.jwk.Jwk;
 import com.auth0.jwk.SigningKeyNotFoundException;
 import com.auth0.jwk.UrlJwkProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
@@ -24,6 +23,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
@@ -210,7 +210,7 @@ public class TuleapAuthenticationApiClientTest {
             this.userInfoValidator
         );
 
-        assertEquals(ImmutableList.of(), authenticationApiClient.getSigningKeys());
+        assertEquals(Collections.emptyList(), authenticationApiClient.getSigningKeys());
     }
 
     @Test
@@ -231,7 +231,7 @@ public class TuleapAuthenticationApiClientTest {
             this.userInfoValidator
         );
 
-        assertEquals(ImmutableList.copyOf(Arrays.asList(key1, key2)), authenticationApiClient.getSigningKeys());
+        assertEquals(Arrays.asList(key1, key2), authenticationApiClient.getSigningKeys());
     }
 
     @Test(expected = RuntimeException.class)
