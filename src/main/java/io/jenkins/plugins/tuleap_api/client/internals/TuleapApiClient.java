@@ -2,7 +2,6 @@ package io.jenkins.plugins.tuleap_api.client.internals;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
@@ -16,6 +15,7 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -57,7 +57,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public ImmutableList<AccessKeyScope> getAccessKeyScopes(Secret secret) {
+    public List<AccessKeyScope> getAccessKeyScopes(Secret secret) {
         Request request = new Request.Builder()
             .url(tuleapConfiguration.getApiBaseUrl() + this.ACCESS_KEY_API + this.ACCESS_KEY_SELF_ID)
             .header(this.AUTHORIZATION_HEADER, secret.getPlainText())
@@ -69,14 +69,13 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 throw new InvalidTuleapResponseException(response);
             }
 
-            return ImmutableList.copyOf(
-                objectMapper
+            return new ArrayList<>(objectMapper
                 .readValue(Objects.requireNonNull(response.body()).string(), AccessKeyEntity.class)
                 .getScopes()
             );
         } catch (IOException | InvalidTuleapResponseException exception) {
             LOGGER.severe(exception.getMessage());
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
     }
 
@@ -108,7 +107,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     @Deprecated
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public ImmutableList<UserGroup> getUserMembershipName(AccessToken accessToken) {
+    public List<UserGroup> getUserMembershipName(AccessToken accessToken) {
         LOGGER.info("You are using a deprecated method. Please upgrade your Tuleap and use getUserMembership() instead. ");
 
         HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
@@ -122,13 +121,13 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             .addHeader("Authorization", "Bearer " + accessToken.getAccessToken())
             .get()
             .build();
-        List<String> userMembershipIds = ImmutableList.of();
+        List<String> userMembershipIds = Collections.emptyList();
         try (Response response = this.client.newCall(req).execute()) {
             if (!response.isSuccessful()) {
                 throw new InvalidTuleapResponseException(response);
             }
             userMembershipIds =
-                ImmutableList.copyOf(
+                new ArrayList<>(
                     this.objectMapper.readValue(
                         Objects.requireNonNull(response.body()).string(),
                         new TypeReference<List<String>>() {
@@ -143,12 +142,12 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             memberships.add(this.getUserGroup(groupId, accessToken));
         });
 
-        return ImmutableList.copyOf(memberships);
+        return memberships;
     }
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public ImmutableList<UserGroup> getUserMembership(AccessToken accessToken) {
+    public List<UserGroup> getUserMembership(AccessToken accessToken) {
         HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
             .newBuilder()
             .addEncodedQueryParameter("scope", "project")
@@ -171,10 +170,10 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 throw new InvalidTuleapResponseException(response);
             }
 
-            return ImmutableList.copyOf(
+            return new ArrayList<>(
                 this.objectMapper.readValue(
                     Objects.requireNonNull(response.body()).string(),
-                    new TypeReference<ImmutableList<UserGroupEntity>>() {
+                    new TypeReference<List<UserGroupEntity>>() {
                     }
                 ));
         } catch (IOException | InvalidTuleapResponseException e) {
@@ -240,7 +239,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
-    public ImmutableList<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token) {
+    public List<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token) {
         final Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId + this.PROJECT_GROUPS)
             .addHeader("Authorization", "Bearer " + token.getAccessToken())
@@ -252,9 +251,9 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 throw new InvalidTuleapResponseException(response);
             }
 
-            return ImmutableList.copyOf(this.objectMapper.readValue(
+            return new ArrayList<>(this.objectMapper.readValue(
                 Objects.requireNonNull(response.body()).string(),
-                new TypeReference<ImmutableList<MinimalUserGroupEntity>>() {}
+                new TypeReference<List<MinimalUserGroupEntity>>() {}
             ));
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);

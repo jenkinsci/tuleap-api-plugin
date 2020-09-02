@@ -4,7 +4,6 @@ import com.auth0.jwk.Jwk;
 import com.auth0.jwk.SigningKeyNotFoundException;
 import com.auth0.jwk.UrlJwkProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
@@ -23,6 +22,8 @@ import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -136,10 +137,10 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
     @Override
     public List<Jwk> getSigningKeys() {
         try {
-            return ImmutableList.copyOf(this.jwkProvider.getAll());
+            return this.jwkProvider.getAll();
         } catch (SigningKeyNotFoundException e) {
             LOGGER.warning("No signing key found");
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
     }
 

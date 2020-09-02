@@ -1,8 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client.internals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.Project;
 import io.jenkins.plugins.tuleap_api.client.UserGroup;
@@ -22,6 +20,7 @@ import org.junit.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -41,7 +40,7 @@ public class TuleapApiClientTest {
     public void setUp() {
         client = mock(OkHttpClient.class);
         tuleapConfiguration = mock(TuleapConfiguration.class);
-        mapper = new ObjectMapper().registerModule(new GuavaModule());
+        mapper = new ObjectMapper();
         tuleapApiClient = new TuleapApiClient(tuleapConfiguration, client, mapper);
         secret = mock(Secret.class);
 
@@ -169,9 +168,9 @@ public class TuleapApiClientTest {
         UserGroup userGroup2 = new UserGroupEntity("project_admins", new ProjectEntity("coincoin", 22));
         UserGroup userGroup3 = new UserGroupEntity("project_members", new ProjectEntity("git-test", 33));
 
-        List<UserGroup> expectedList = ImmutableList.of(userGroup1, userGroup2, userGroup3);
+        List<UserGroup> expectedList = Arrays.asList(userGroup1, userGroup2, userGroup3);
 
-        ImmutableList<UserGroup> resultList = tuleapApiClient.getUserMembershipName(accessToken);
+        List<UserGroup> resultList = tuleapApiClient.getUserMembershipName(accessToken);
         assertEquals(resultList.get(0).getGroupName(), expectedList.get(0).getGroupName());
         assertEquals(resultList.get(0).getProjectName(), expectedList.get(0).getProjectName());
 
@@ -205,7 +204,7 @@ public class TuleapApiClientTest {
             .thenReturn(jsonUserGroupsPayload1);
 
         UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
-        List<UserGroup> expectedList = ImmutableList.of(userGroup1);
+        List<UserGroup> expectedList = Arrays.asList(userGroup1);
 
         List<UserGroup> resultList = this.tuleapApiClient.getUserMembership(this.accessToken);
 
@@ -232,7 +231,7 @@ public class TuleapApiClientTest {
         UserGroup userMembership1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 106));
         UserGroup userMembership2 = new UserGroupEntity("atchoum", new ProjectEntity("git-test", 113));
 
-        List<UserGroup> expectedList = ImmutableList.of(userMembership1, userMembership2);
+        List<UserGroup> expectedList = Arrays.asList(userMembership1, userMembership2);
 
         List<UserGroup> resultList = tuleapApiClient.getUserMembership(this.accessToken);
 
@@ -363,7 +362,7 @@ public class TuleapApiClientTest {
         when(response.body()).thenReturn(responseBody);
         when(responseBody.string()).thenReturn(payload);
 
-        ImmutableList<UserGroup> userGroups = tuleapApiClient.getProjectUserGroups(20, accessToken);
+        List<UserGroup> userGroups = tuleapApiClient.getProjectUserGroups(20, accessToken);
 
         assertEquals(8, userGroups.size());
     }
