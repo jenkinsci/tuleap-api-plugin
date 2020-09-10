@@ -121,7 +121,7 @@ public class TuleapSendTTMResultsStep extends Step {
 
         @Override
         public String getFunctionName() {
-            return "TuleapSendTTMResults";
+            return "tuleapSendTTMResults";
         }
 
         @NotNull
