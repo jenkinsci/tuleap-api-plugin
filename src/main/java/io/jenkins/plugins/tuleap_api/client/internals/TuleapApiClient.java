@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi , TestCampaignApi {
+public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi , TestCampaignApi, GitApi {
     private static final Logger LOGGER = Logger.getLogger(TuleapApiClient.class.getName());
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
@@ -275,6 +275,28 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 .build();
         } catch (JsonProcessingException exception) {
             throw new RuntimeException("Error while trying to create request for TTM results", exception);
+        }
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+        } catch (IOException | InvalidTuleapResponseException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+    @Override
+    public void sendBuildStatus(String repositoryId, String commitReference, BuildStatus status, Secret token) {
+        Request request;
+
+        try {
+            request = new Request.Builder()
+                .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.STATUSES + "/" + commitReference )
+                .post(RequestBody.create(this.objectMapper.writeValueAsString(new SendBuildStatusEntity(status.name(), token.getPlainText())), JSON))
+                .build();
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException("Error while trying to create request for build status", exception);
         }
 
         try (Response response = this.client.newCall(request).execute()) {
