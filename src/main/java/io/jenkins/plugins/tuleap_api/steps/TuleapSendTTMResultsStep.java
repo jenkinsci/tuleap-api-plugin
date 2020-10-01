@@ -1,21 +1,31 @@
 package io.jenkins.plugins.tuleap_api.steps;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
+import hudson.util.ListBoxModel;
 import io.jenkins.plugins.tuleap_api.client.TuleapApiGuiceModule;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.jetbrains.annotations.NotNull;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
+import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
@@ -128,6 +138,18 @@ public class TuleapSendTTMResultsStep extends Step {
         @Override
         public String getDisplayName() {
             return "Send Tuleap Test Management Results";
+        }
+
+        @POST
+        public ListBoxModel doFillCredentialIdItems(@CheckForNull @AncestorInPath Item context,
+                                                    @QueryParameter String apiUri) {
+
+            if (context != null && context.hasPermission(Item.CONFIGURE)) {
+                return new StandardListBoxModel().includeMatchingAs(
+                    context instanceof hudson.model.Queue.Task ? ((Queue.Task) context).getDefaultAuthentication() : ACL.SYSTEM,
+                    context, TuleapAccessToken.class, URIRequirementBuilder.fromUri(apiUri).build(), CredentialsMatchers.instanceOf(TuleapAccessToken.class)).includeEmptyValue();
+            }
+            return new StandardListBoxModel().includeEmptyValue();
         }
     }
 }
