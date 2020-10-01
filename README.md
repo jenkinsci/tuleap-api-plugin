@@ -38,6 +38,22 @@ Tested with OpenJDK 8
     $> mvn clean install
     $> cp target/tuleap-branch-source.hpi onto jenkins
 
+# Features
+
+Tuleap API also provides pipelines commands to communicate with your Tuleap instance.
+
+``tuleapNotifyCommitStatus`` command will send the build result to a [Pull Request](https://docs.tuleap.org/user-guide/code-review/pullrequest.html#pull-requests) in Tuleap.
+
+``tuleapSendTTMResults`` command will send the test result to [Test Management](https://docs.tuleap.org/user-guide/testmanagement.html#test-management).
+
+## Pull request notification configuration
+
+To configure the ``tuleapNotifyCommitStatus`` command, you can find the documentation here: https://docs.tuleap.org/user-guide/ci.html?#pull-request-notification-configuration
+
+## Test automation
+
+To configure ``tuleapSendTTMResults`` command, you can find the documentation here: https://docs.tuleap.org/user-guide/ci.html?#jenkins-configuration-for-test-automation
+
 ## Authors
 
 * GOYOT Martin
