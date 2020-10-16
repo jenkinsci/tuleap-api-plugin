@@ -5,8 +5,7 @@ import hudson.plugins.git.util.Build;
 import hudson.plugins.git.util.BuildData;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.GitApi;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.BuildStatus;
-import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.junit.Test;
@@ -35,7 +34,7 @@ public class TuleapNotifyCommitStatusRunnerTest {
 
         buildData.lastBuild = build;
         when(tuleapNotifyCommitStatusStep.getRepositoryId()).thenReturn(repositoryId);
-        when(tuleapNotifyCommitStatusStep.getStatus()).thenReturn(BuildStatus.success);
+        when(tuleapNotifyCommitStatusStep.getStatus()).thenReturn(TuleapBuildStatus.success);
         when(run.getAction(BuildData.class)).thenReturn(buildData);
         when(build.getSHA1()).thenReturn(sha1);
         when(sha1.name()).thenReturn(aSha1Value);
@@ -51,7 +50,7 @@ public class TuleapNotifyCommitStatusRunnerTest {
         verify(gitApi, atMostOnce()).sendBuildStatus(
             repositoryId,
             aSha1Value,
-            BuildStatus.success,
+            TuleapBuildStatus.success,
             secret
         );
     }

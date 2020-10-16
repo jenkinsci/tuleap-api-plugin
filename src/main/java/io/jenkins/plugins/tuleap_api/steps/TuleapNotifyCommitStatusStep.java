@@ -1,37 +1,48 @@
 package io.jenkins.plugins.tuleap_api.steps;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import hudson.Extension;
+import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
+import hudson.util.ListBoxModel;
+import io.jenkins.plugins.tuleap_api.Messages;
 import io.jenkins.plugins.tuleap_api.client.TuleapApiGuiceModule;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.BuildStatus;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.workflow.steps.*;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
+import javax.annotation.CheckForNull;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TuleapNotifyCommitStatusStep extends Step {
-    private final BuildStatus status;
+    private final TuleapBuildStatus status;
     private final String repositoryId;
     private final String credentialId;
 
     @DataBoundConstructor
-    public TuleapNotifyCommitStatusStep(BuildStatus status, String repositoryId, String credentialId) {
+    public TuleapNotifyCommitStatusStep(TuleapBuildStatus status, String repositoryId, String credentialId) {
         this.status = status;
         this.repositoryId = repositoryId;
         this.credentialId = credentialId;
     }
 
-    public BuildStatus getStatus() {
+    public TuleapBuildStatus getStatus() {
         return status;
     }
 
@@ -94,7 +105,7 @@ public class TuleapNotifyCommitStatusStep extends Step {
     public static class DescriptorImpl extends StepDescriptor {
         @Override
         public String getDisplayName() {
-            return "Update the build status of the commit in Tuleap";
+            return Messages.TuleapNotifyCommitStatusStep_displayName();
         }
 
         @Override
@@ -110,6 +121,25 @@ public class TuleapNotifyCommitStatusStep extends Step {
                     Run.class
                 )
             );
+        }
+
+        public ListBoxModel doFillStatusItems() {
+            ListBoxModel options = new ListBoxModel();
+            options.add(Messages.TuleapNotifyCommitStatusStep_success(), TuleapBuildStatus.success.name());
+            options.add(Messages.TuleapNotifyCommitStatusStep_failure(), TuleapBuildStatus.failure.name());
+            return options;
+        }
+
+        @POST
+        public ListBoxModel doFillCredentialIdItems(@CheckForNull @AncestorInPath Item context,
+                                                    @QueryParameter String apiUri) {
+
+            if (context != null && context.hasPermission(Item.CONFIGURE)) {
+                return new StandardListBoxModel().includeMatchingAs(
+                    context instanceof Queue.Task ? ((Queue.Task) context).getDefaultAuthentication() : ACL.SYSTEM,
+                    context, StringCredentials.class, URIRequirementBuilder.fromUri(apiUri).build(), CredentialsMatchers.instanceOf(StringCredentials.class)).includeEmptyValue();
+            }
+            return new StandardListBoxModel().includeEmptyValue();
         }
     }
 }
