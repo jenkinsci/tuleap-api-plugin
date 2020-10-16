@@ -15,7 +15,7 @@ import hudson.security.ACL;
 import hudson.util.ListBoxModel;
 import io.jenkins.plugins.tuleap_api.Messages;
 import io.jenkins.plugins.tuleap_api.client.TuleapApiGuiceModule;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.BuildStatus;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.workflow.steps.*;
@@ -31,18 +31,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TuleapNotifyCommitStatusStep extends Step {
-    private final BuildStatus status;
+    private final TuleapBuildStatus status;
     private final String repositoryId;
     private final String credentialId;
 
     @DataBoundConstructor
-    public TuleapNotifyCommitStatusStep(BuildStatus status, String repositoryId, String credentialId) {
+    public TuleapNotifyCommitStatusStep(TuleapBuildStatus status, String repositoryId, String credentialId) {
         this.status = status;
         this.repositoryId = repositoryId;
         this.credentialId = credentialId;
     }
 
-    public BuildStatus getStatus() {
+    public TuleapBuildStatus getStatus() {
         return status;
     }
 
@@ -125,8 +125,8 @@ public class TuleapNotifyCommitStatusStep extends Step {
 
         public ListBoxModel doFillStatusItems() {
             ListBoxModel options = new ListBoxModel();
-            options.add(Messages.TuleapNotifyCommitStatusStep_success(), "success");
-            options.add(Messages.TuleapNotifyCommitStatusStep_failure(), "failure");
+            options.add(Messages.TuleapNotifyCommitStatusStep_success(), TuleapBuildStatus.success.name());
+            options.add(Messages.TuleapNotifyCommitStatusStep_failure(), TuleapBuildStatus.failure.name());
             return options;
         }
 

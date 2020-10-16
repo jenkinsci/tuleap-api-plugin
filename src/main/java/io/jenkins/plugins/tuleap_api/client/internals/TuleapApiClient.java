@@ -287,7 +287,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    public void sendBuildStatus(String repositoryId, String commitReference, BuildStatus status, Secret token) {
+    public void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, Secret token) {
         Request request;
 
         try {

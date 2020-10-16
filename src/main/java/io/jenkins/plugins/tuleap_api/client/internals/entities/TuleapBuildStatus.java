@@ -1,6 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client.internals.entities;
 
-public enum BuildStatus {
+public enum TuleapBuildStatus {
     failure,
     success
 }
