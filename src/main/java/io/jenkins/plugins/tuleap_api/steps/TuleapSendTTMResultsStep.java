@@ -26,6 +26,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.CheckForNull;
+import javax.management.RuntimeErrorException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
@@ -90,8 +91,12 @@ public class TuleapSendTTMResultsStep extends Step {
 
         @Override
         protected Void run() throws Exception {
-            assert filePath != null;
-
+            if (filePath == null) {
+                throw new RuntimeErrorException(
+                    new Error("FilePath is null. Please check the configuration.")
+                );
+            }
+            
             logger.println("Retrieving Tuleap API credentials");
             final TuleapAccessToken tuleapAccessToken = CredentialsProvider.findCredentialById(
                 tuleapSendTTMResultsStep.getCredentialId(),
@@ -100,7 +105,11 @@ public class TuleapSendTTMResultsStep extends Step {
                 URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
             );
 
-            assert tuleapAccessToken != null;
+            if (tuleapAccessToken == null) {
+                throw new RuntimeErrorException(
+                    new Error("Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile.")
+                );
+            }
 
             tuleapSendTTMResultsRunner.run(
                 tuleapAccessToken,
