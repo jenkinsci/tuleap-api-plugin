@@ -26,7 +26,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.CheckForNull;
-import javax.management.RuntimeErrorException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
