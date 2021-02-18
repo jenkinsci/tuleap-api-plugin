@@ -92,8 +92,8 @@ public class TuleapSendTTMResultsStep extends Step {
         @Override
         protected Void run() throws Exception {
             if (filePath == null) {
-                throw new RuntimeErrorException(
-                    new Error("FilePath is null. Please check the configuration.")
+                throw new RuntimeException(
+                    "FilePath is null. Please check the configuration."
                 );
             }
             
@@ -106,8 +106,8 @@ public class TuleapSendTTMResultsStep extends Step {
             );
 
             if (tuleapAccessToken == null) {
-                throw new RuntimeErrorException(
-                    new Error("Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile.")
+                throw new RuntimeException(
+                    "Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile."
                 );
             }
 

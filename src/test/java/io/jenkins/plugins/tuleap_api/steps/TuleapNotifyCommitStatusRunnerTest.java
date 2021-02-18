@@ -54,4 +54,23 @@ public class TuleapNotifyCommitStatusRunnerTest {
             secret
         );
     }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsARuntimeExceptionWhenGitDataCouldNotBeRetrieved() throws Exception {
+        final GitApi gitApi = mock(GitApi.class);
+        final TuleapNotifyCommitStatusRunner tuleapNotifyCommitStatusRunner = new TuleapNotifyCommitStatusRunner(gitApi);
+        final StringCredentials credential = mock(StringCredentials.class);
+        final PrintStream logger = mock(PrintStream.class);
+        final TuleapNotifyCommitStatusStep tuleapNotifyCommitStatusStep = mock(TuleapNotifyCommitStatusStep.class);
+        final Run run = mock(Run.class);
+
+        when(run.getAction(BuildData.class)).thenReturn(null);
+
+        tuleapNotifyCommitStatusRunner.run(
+            credential,
+            logger,
+            run,
+            tuleapNotifyCommitStatusStep
+        );
+    }
 }

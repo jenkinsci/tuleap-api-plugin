@@ -25,7 +25,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.CheckForNull;
-import javax.management.RuntimeErrorException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -90,8 +89,8 @@ public class TuleapNotifyCommitStatusStep extends Step {
             );
 
             if (credential == null) {
-                throw new RuntimeErrorException(
-                    new Error("Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile.")
+                throw new RuntimeException(
+                    "Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile."
                 );
             }
 

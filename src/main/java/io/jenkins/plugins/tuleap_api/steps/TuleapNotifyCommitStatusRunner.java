@@ -7,7 +7,6 @@ import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import javax.inject.Inject;
-import javax.management.RuntimeErrorException;
 import java.io.PrintStream;
 
 public class TuleapNotifyCommitStatusRunner {
@@ -28,8 +27,8 @@ public class TuleapNotifyCommitStatusRunner {
         final BuildData gitData = run.getAction(BuildData.class);
 
         if (gitData == null) {
-            throw new RuntimeErrorException(
-                new Error("Failed to retrieve Git Data. Please check the configuration.")
+            throw new RuntimeException(
+                "Failed to retrieve Git Data. Please check the configuration."
             );
         }
 
