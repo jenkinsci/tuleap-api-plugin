@@ -26,7 +26,11 @@ public class TuleapNotifyCommitStatusRunner {
         logger.println("Retrieving Git Data");
         final BuildData gitData = run.getAction(BuildData.class);
 
-        assert gitData != null;
+        if (gitData == null) {
+            throw new RuntimeException(
+                "Failed to retrieve Git Data. Please check the configuration."
+            );
+        }
 
         logger.println("Sending build status to Tuleap");
         gitApi.sendBuildStatus(

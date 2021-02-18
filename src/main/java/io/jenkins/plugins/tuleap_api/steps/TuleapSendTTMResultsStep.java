@@ -90,8 +90,12 @@ public class TuleapSendTTMResultsStep extends Step {
 
         @Override
         protected Void run() throws Exception {
-            assert filePath != null;
-
+            if (filePath == null) {
+                throw new RuntimeException(
+                    "FilePath is null. Please check the configuration."
+                );
+            }
+            
             logger.println("Retrieving Tuleap API credentials");
             final TuleapAccessToken tuleapAccessToken = CredentialsProvider.findCredentialById(
                 tuleapSendTTMResultsStep.getCredentialId(),
@@ -100,7 +104,11 @@ public class TuleapSendTTMResultsStep extends Step {
                 URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
             );
 
-            assert tuleapAccessToken != null;
+            if (tuleapAccessToken == null) {
+                throw new RuntimeException(
+                    "Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile."
+                );
+            }
 
             tuleapSendTTMResultsRunner.run(
                 tuleapAccessToken,

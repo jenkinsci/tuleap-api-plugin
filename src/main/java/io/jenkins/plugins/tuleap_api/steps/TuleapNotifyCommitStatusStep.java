@@ -88,7 +88,11 @@ public class TuleapNotifyCommitStatusStep extends Step {
                 URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
             );
 
-            assert credential != null;
+            if (credential == null) {
+                throw new RuntimeException(
+                    "Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile."
+                );
+            }
 
             tuleapNotifyCommitStatusRunner.run(
                 credential,
