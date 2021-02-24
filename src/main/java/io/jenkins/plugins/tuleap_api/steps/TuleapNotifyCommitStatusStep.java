@@ -131,6 +131,7 @@ public class TuleapNotifyCommitStatusStep extends Step {
             ListBoxModel options = new ListBoxModel();
             options.add(Messages.TuleapNotifyCommitStatusStep_success(), TuleapBuildStatus.success.name());
             options.add(Messages.TuleapNotifyCommitStatusStep_failure(), TuleapBuildStatus.failure.name());
+            options.add(Messages.TuleapNotifyCommitStatusStep_pending(), TuleapBuildStatus.pending.name());
             return options;
         }
 
