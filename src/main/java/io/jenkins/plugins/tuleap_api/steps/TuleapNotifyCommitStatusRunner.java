@@ -37,7 +37,7 @@ public class TuleapNotifyCommitStatusRunner {
             step.getRepositoryId(),
             gitData.lastBuild.getSHA1().name(),
             step.getStatus(),
-            credential.getSecret()
+            credential
         );
     }
 }

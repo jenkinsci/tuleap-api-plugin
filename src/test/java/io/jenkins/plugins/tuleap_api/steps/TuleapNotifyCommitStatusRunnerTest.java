@@ -30,7 +30,6 @@ public class TuleapNotifyCommitStatusRunnerTest {
 
         final String repositoryId = "1";
         final String aSha1Value = "someSha1ValueThatMatters";
-        final Secret secret = Secret.fromString("a-very-secret-secret");
 
         buildData.lastBuild = build;
         when(tuleapNotifyCommitStatusStep.getRepositoryId()).thenReturn(repositoryId);
@@ -38,7 +37,6 @@ public class TuleapNotifyCommitStatusRunnerTest {
         when(run.getAction(BuildData.class)).thenReturn(buildData);
         when(build.getSHA1()).thenReturn(sha1);
         when(sha1.name()).thenReturn(aSha1Value);
-        when(credential.getSecret()).thenReturn(secret);
 
         tuleapNotifyCommitStatusRunner.run(
             credential,
@@ -51,7 +49,7 @@ public class TuleapNotifyCommitStatusRunnerTest {
             repositoryId,
             aSha1Value,
             TuleapBuildStatus.success,
-            secret
+            credential
         );
     }
 
