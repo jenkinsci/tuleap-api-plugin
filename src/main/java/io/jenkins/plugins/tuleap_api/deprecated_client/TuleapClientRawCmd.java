@@ -90,6 +90,19 @@ public class TuleapClientRawCmd {
         }
     }
 
+    public static class PullRequests extends TuleapClientRawCmd implements  Command<Stream<TuleapPullRequests>> {
+        private final int idRepo;
+
+        public PullRequests(int idRepo) {
+            this.idRepo = idRepo;
+        }
+
+        @Override
+        public Stream<TuleapPullRequests> call() throws IOException {
+            return client.allPullRequests(idRepo);
+        }
+    }
+
     public static class GetJenkinsFile extends TuleapClientRawCmd implements Command<Optional<TuleapFileContent>> {
 
         private int idRepo;

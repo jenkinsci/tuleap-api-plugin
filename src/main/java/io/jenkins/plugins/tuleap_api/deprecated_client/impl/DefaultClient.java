@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -287,6 +288,51 @@ class DefaultClient implements TuleapClient {
         return allBranches;
     }
 
+    public final Stream<TuleapPullRequests> allPullRequests(int idRepo) throws IOException {
+        String allPullRequestsURL = apiBaseUrl + TULEAP_API_GIT_PATH + "/" + idRepo + "/pull_requests";
+        int offset            = 0;
+        int limit             = 50;
+        int totalPages        = 0;
+        int pageCount         = 0;
+        Stream<TuleapPullRequests> pullRequests = Stream.empty();
+        do {
+            offset = pageCount * limit;
+            final String fetchUrl = allPullRequestsURL + "?offset=" + offset + "&limit=" + limit;
+            LOGGER.info("GET {}", fetchUrl);
+
+            Request request = new Request.Builder()
+                .url(new URL(allPullRequestsURL))
+                .addHeader("content-type", "application/json")
+                .cacheControl(CacheControl.FORCE_NETWORK)
+                .get()
+                .build();
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new IOException(
+                        "HTTP call error at url: " + request.url().toString() + " " + "with code: " + response.code());
+                }
+                if (offset == 0) {
+                    int nbMax = 0;
+                    String collectionLengthHeader = response.header(COLLECTION_LENGTH_HEADER);
+                    if (collectionLengthHeader != null) {
+                        nbMax = Integer.parseInt(collectionLengthHeader);
+                    }
+                    totalPages = nbMax / limit + ((nbMax % limit == 0) ? 0 : 1);
+                }
+                ResponseBody responseBody = response.body();
+                if (responseBody != null) {
+                    TuleapPullRequestsCollection collection = parse(responseBody.string(), TuleapPullRequestsCollection.class);
+                    pullRequests = Stream.concat(pullRequests, collection.getCollection().stream());
+                }
+            } catch (IOException e) {
+                throw new IOException("GetBranches encounter error", e);
+            }
+            pageCount++;
+        } while(pageCount < totalPages);
+
+        return pullRequests;
+    }
+
     public final Optional<TuleapFileContent> getJenkinsFile(int idRepo, String pathToFile, String ref) throws IOException {
         String getJenkinsFileUrl = apiBaseUrl + TULEAP_API_GIT_PATH + "/" + idRepo + "/files";
         HttpUrl url = HttpUrl.parse(getJenkinsFileUrl);
@@ -327,6 +373,7 @@ class DefaultClient implements TuleapClient {
 
     private <T> T parse(final String input, Class<T> clazz) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(SNAKE_CASE);
         try {
             return mapper.readValue(input, clazz);
         } catch (IOException e) {

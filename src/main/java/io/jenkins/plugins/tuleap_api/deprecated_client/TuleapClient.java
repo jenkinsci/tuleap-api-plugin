@@ -122,6 +122,8 @@ public interface TuleapClient {
     Optional<TuleapFileContent> getJenkinsFile(int idRepo, String path_to_file, String ref) throws IOException;
 
     Stream<TuleapBranches> allBranches(int idRepo) throws IOException;
+
+    Stream<TuleapPullRequests> allPullRequests(int idRepo) throws IOException;
     /**
      * If multpile git repo are represented by a path it is a show stopper as in Tuleap the discriminant is the git
      * repo path
