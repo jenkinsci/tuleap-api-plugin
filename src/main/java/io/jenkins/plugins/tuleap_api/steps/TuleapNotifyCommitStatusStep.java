@@ -16,9 +16,11 @@ import hudson.util.ListBoxModel;
 import io.jenkins.plugins.tuleap_api.Messages;
 import io.jenkins.plugins.tuleap_api.client.TuleapApiGuiceModule;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
+import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.workflow.steps.*;
+import org.jetbrains.annotations.Nullable;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -81,27 +83,54 @@ public class TuleapNotifyCommitStatusStep extends Step {
         @Override
         protected Void run() {
             logger.println("Retrieving Tuleap API credentials");
-            final StringCredentials credential = CredentialsProvider.findCredentialById(
-                step.getCredentialId(),
-                StringCredentials.class,
-                run,
-                URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
-            );
 
-            if (credential == null) {
+            StringCredentials ciToken= getCIToken();
+            if (ciToken != null) {
+                tuleapNotifyCommitStatusRunner.run(
+                    ciToken,
+                    logger,
+                    run,
+                    step
+                );
+
+                return null;
+            }
+
+            TuleapAccessToken accessKey = getTuleapAccessKey();
+            if (accessKey == null) {
                 throw new RuntimeException(
                     "Credentials could not be retrieved using the provided credential id. Please check your Jenkinsfile."
                 );
             }
 
             tuleapNotifyCommitStatusRunner.run(
-                credential,
+                accessKey,
                 logger,
                 run,
                 step
             );
 
             return null;
+        }
+
+        @Nullable
+        private TuleapAccessToken getTuleapAccessKey() {
+            return CredentialsProvider.findCredentialById(
+                step.getCredentialId(),
+                TuleapAccessToken.class,
+                run,
+                URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
+            );
+        }
+
+        @Nullable
+        private StringCredentials getCIToken() {
+            return CredentialsProvider.findCredentialById(
+                step.getCredentialId(),
+                StringCredentials.class,
+                run,
+                URIRequirementBuilder.fromUri(tuleapConfiguration.getApiBaseUrl()).build()
+            );
         }
     }
 
