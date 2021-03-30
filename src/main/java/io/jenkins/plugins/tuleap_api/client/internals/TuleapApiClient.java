@@ -12,8 +12,10 @@ import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.*;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
+import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -287,13 +289,36 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    public void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, Secret token) {
+    public void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, StringCredentials credentials) {
         Request request;
 
         try {
             request = new Request.Builder()
                 .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.STATUSES + "/" + commitReference )
-                .post(RequestBody.create(this.objectMapper.writeValueAsString(new SendBuildStatusEntity(status.name(), token.getPlainText())), JSON))
+                .post(RequestBody.create(this.objectMapper.writeValueAsString(new SendBuildStatusAndCITokenEntity(status.name(), credentials.getSecret().getPlainText())), JSON))
+                .build();
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException("Error while trying to create request for build status", exception);
+        }
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+        } catch (IOException | InvalidTuleapResponseException exception) {
+            throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+    @Override
+    public void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, TuleapAccessToken token) {
+        Request request;
+
+        try {
+            request = new Request.Builder()
+                .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.STATUSES + "/" + commitReference)
+                .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+                .post(RequestBody.create(this.objectMapper.writeValueAsString(new SendBuildStatusEntity(status.name())), JSON))
                 .build();
         } catch (JsonProcessingException exception) {
             throw new RuntimeException("Error while trying to create request for build status", exception);
