@@ -1,19 +1,27 @@
 package io.jenkins.plugins.tuleap_api.client.internals;
 
+import com.cloudbees.plugins.credentials.CredentialsDescriptor;
+import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.util.Secret;
+import io.jenkins.plugins.tuleap_api.client.GitCommit;
 import io.jenkins.plugins.tuleap_api.client.Project;
 import io.jenkins.plugins.tuleap_api.client.UserGroup;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.GitCommitEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.ProjectEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
+import io.jenkins.plugins.tuleap_api.deprecated_client.api.TuleapGitCommit;
+import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
+import io.jenkins.plugins.tuleap_credentials.TuleapAccessTokenImpl;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -365,5 +373,88 @@ public class TuleapApiClientTest {
         List<UserGroup> userGroups = tuleapApiClient.getProjectUserGroups(20, accessToken);
 
         assertEquals(8, userGroups.size());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsExceptionWhenTheCommitCannotBeRetrieved() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getCommit("10", "518151ezze", tuleapAccessToken);
+    }
+
+    @Test
+    public void itReturnsTheWantedCommitInformation() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String jsonGitCommitPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_commit_payload.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string())
+            .thenReturn(jsonGitCommitPayload);
+
+        TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
+
+        GitCommitEntity expectedGitCommit = new GitCommitEntity("38dfa09a67d7872d821b6a46eff340bc8ae0af0f", "2021-01-07T14:58:40+01:00");
+        GitCommit gitCommit = tuleapApiClient.getCommit("4", "38dfa09a67d7872d821b6a46eff340bc8ae0af0f", accessToken);
+
+        assertEquals(expectedGitCommit.getHash(), gitCommit.getHash());
+        assertEquals(expectedGitCommit.getCommitDate(), gitCommit.getCommitDate());
+    }
+
+
+    private TuleapAccessToken getTuleapAccessTokenStubClass() {
+        return new TuleapAccessToken() {
+            @NotNull
+            @Override
+            public Secret getToken() {
+                return Secret.fromString("my_t0k3n");
+            }
+
+            @NotNull
+            @Override
+            public Secret getPassword() {
+                return Secret.fromString("d0lph1n");
+            }
+
+            @NotNull
+            @Override
+            public String getDescription() {
+                return "";
+            }
+
+            @NotNull
+            @Override
+            public String getId() {
+                return "";
+            }
+
+            @NotNull
+            @Override
+            public String getUsername() {
+                return "Coco";
+            }
+
+            @Override
+            public CredentialsScope getScope() {
+                return CredentialsScope.SYSTEM;
+            }
+
+            @NotNull
+            @Override
+            public CredentialsDescriptor getDescriptor() {
+                return new TuleapAccessTokenImpl.DescriptorImpl();
+            }
+        };
     }
 }
