@@ -2,6 +2,7 @@ package io.jenkins.plugins.tuleap_api.client.internals;
 
 import com.cloudbees.plugins.credentials.CredentialsDescriptor;
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.GitCommit;
@@ -48,7 +49,7 @@ public class TuleapApiClientTest {
     public void setUp() {
         client = mock(OkHttpClient.class);
         tuleapConfiguration = mock(TuleapConfiguration.class);
-        mapper = new ObjectMapper();
+        mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         tuleapApiClient = new TuleapApiClient(tuleapConfiguration, client, mapper);
         secret = mock(Secret.class);
 

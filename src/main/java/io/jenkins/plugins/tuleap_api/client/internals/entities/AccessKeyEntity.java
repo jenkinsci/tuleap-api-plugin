@@ -1,13 +1,11 @@
 package io.jenkins.plugins.tuleap_api.client.internals.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccessKeyEntity {
     private List<AccessKeyScopeEntity> scopes;
 

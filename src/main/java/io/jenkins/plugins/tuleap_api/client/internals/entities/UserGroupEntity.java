@@ -1,10 +1,8 @@
 package io.jenkins.plugins.tuleap_api.client.internals.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.tuleap_api.client.UserGroup;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserGroupEntity implements UserGroup {
 
     private String shortName;
