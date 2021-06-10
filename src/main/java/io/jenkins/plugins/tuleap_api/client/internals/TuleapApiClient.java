@@ -325,11 +325,33 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         }
 
         try (Response response = this.client.newCall(request).execute()) {
-            if (! response.isSuccessful()) {
+            if (!response.isSuccessful()) {
                 throw new InvalidTuleapResponseException(response);
             }
         } catch (IOException | InvalidTuleapResponseException exception) {
             throw new RuntimeException("Error while contacting Tuleap server", exception);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public GitCommit getCommit(String repositoryId, String commitReference, TuleapAccessToken token) {
+        Request request = new Request.Builder()
+            .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.COMMITS + "/" + commitReference)
+            .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+            .get()
+            .build();
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+            return this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                GitCommitEntity.class
+            );
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
         }
     }
 }

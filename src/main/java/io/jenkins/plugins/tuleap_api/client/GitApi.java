@@ -6,9 +6,13 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 public interface GitApi {
     String GIT_API = "/git";
+
     String STATUSES = "/statuses";
+    String COMMITS = "/commits";
 
     void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, StringCredentials credentials);
 
     void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, TuleapAccessToken token);
+
+    GitCommit getCommit(String repositoryId, String commitReference, TuleapAccessToken token);
 }
