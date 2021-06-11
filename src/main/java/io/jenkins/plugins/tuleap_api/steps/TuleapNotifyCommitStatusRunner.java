@@ -3,6 +3,7 @@ package io.jenkins.plugins.tuleap_api.steps;
 import hudson.model.Run;
 import hudson.plugins.git.util.BuildData;
 import io.jenkins.plugins.tuleap_api.client.GitApi;
+import io.jenkins.plugins.tuleap_api.client.GitCommit;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jetbrains.annotations.NotNull;

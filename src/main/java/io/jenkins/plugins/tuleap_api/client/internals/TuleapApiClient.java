@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi , TestCampaignApi, GitApi {
@@ -303,9 +304,9 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
         try (Response response = this.client.newCall(request).execute()) {
             if (! response.isSuccessful()) {
-                throw new InvalidTuleapResponseException(response);
+                LOGGER.log(Level.WARNING, "The response received from Tuleap is invalid: {0}", response.toString());
             }
-        } catch (IOException | InvalidTuleapResponseException exception) {
+        } catch (IOException exception) {
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }
@@ -326,9 +327,9 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
         try (Response response = this.client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new InvalidTuleapResponseException(response);
+                LOGGER.log(Level.WARNING, "The response received from Tuleap is invalid: {0}", response.toString());
             }
-        } catch (IOException | InvalidTuleapResponseException exception) {
+        } catch (IOException exception) {
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }
