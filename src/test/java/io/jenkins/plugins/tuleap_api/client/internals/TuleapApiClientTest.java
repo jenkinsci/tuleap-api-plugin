@@ -12,8 +12,8 @@ import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.GitCommitEntity;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.ProjectEntity;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
-import io.jenkins.plugins.tuleap_api.deprecated_client.api.TuleapGitCommit;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessTokenImpl;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
@@ -22,6 +22,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -413,6 +415,67 @@ public class TuleapApiClientTest {
         assertEquals(expectedGitCommit.getCommitDate(), gitCommit.getCommitDate());
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testItPostTheBuildResultAndThrowsExceptionIfItFails() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
+
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.sendBuildStatus("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
+        tuleapApiClient.sendBuildStatus("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
+    }
+
+    @Test
+    public void testItPostTheBuildResult() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
+    }
+
+    @Test
+    public void testItPostTheBuildResultWithoutErrorWhenTheResponseIsSuccessful() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
+
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
+    }
+
+    @Test
+    public void testItPostTheBuildResultWithoutErrorWhenTheResponseIsNotSuccessful() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
+        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
+    }
 
     private TuleapAccessToken getTuleapAccessTokenStubClass() {
         return new TuleapAccessToken() {
@@ -455,6 +518,39 @@ public class TuleapApiClientTest {
             @Override
             public CredentialsDescriptor getDescriptor() {
                 return new TuleapAccessTokenImpl.DescriptorImpl();
+            }
+        };
+    }
+
+    private StringCredentials getStringCredentialsStubClass() {
+       return new StringCredentials() {
+            @NotNull
+            @Override
+            public Secret getSecret() {
+                return Secret.fromString("hello");
+            }
+
+            @NotNull
+            @Override
+            public String getDescription() {
+                return "";
+            }
+
+            @NotNull
+            @Override
+            public String getId() {
+                return "1";
+            }
+
+            @Override
+            public CredentialsScope getScope() {
+                return CredentialsScope.USER;
+            }
+
+            @NotNull
+            @Override
+            public CredentialsDescriptor getDescriptor() {
+                return new StringCredentialsImpl.DescriptorImpl();
             }
         };
     }
