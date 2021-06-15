@@ -434,7 +434,6 @@ public class TuleapApiClientTest {
     @Test
     public void testItPostTheBuildResult() throws IOException {
         TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
-        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
         Call call = mock(Call.class);
         Response response = mock(Response.class);
 
@@ -448,7 +447,6 @@ public class TuleapApiClientTest {
     @Test
     public void testItPostTheBuildResultWithoutErrorWhenTheResponseIsSuccessful() throws IOException {
         TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
-        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
 
         Call call = mock(Call.class);
         Response response = mock(Response.class);
