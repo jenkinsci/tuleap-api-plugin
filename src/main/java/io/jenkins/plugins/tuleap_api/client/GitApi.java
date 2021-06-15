@@ -14,8 +14,6 @@ public interface GitApi {
 
     void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, TuleapAccessToken token);
 
-    void sendBuildStatusWithWarningLog(String repositoryId, String commitReference, TuleapBuildStatus status, StringCredentials credentials);
-
     void sendBuildStatusWithWarningLog(String repositoryId, String commitReference, TuleapBuildStatus status, TuleapAccessToken token);
 
     GitCommit getCommit(String repositoryId, String commitReference, TuleapAccessToken token);

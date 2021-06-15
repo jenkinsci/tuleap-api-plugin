@@ -335,28 +335,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    public void sendBuildStatusWithWarningLog(String repositoryId, String commitReference, TuleapBuildStatus status, StringCredentials credentials) {
-        Request request;
-
-        try {
-            request = new Request.Builder()
-                .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.STATUSES + "/" + commitReference )
-                .post(RequestBody.create(this.objectMapper.writeValueAsString(new SendBuildStatusAndCITokenEntity(status.name(), credentials.getSecret().getPlainText())), JSON))
-                .build();
-        } catch (JsonProcessingException exception) {
-            throw new RuntimeException("Error while trying to create request for build status", exception);
-        }
-
-        try (Response response = this.client.newCall(request).execute()) {
-            if (! response.isSuccessful()) {
-                LOGGER.log(Level.WARNING, "The response received from Tuleap is invalid: {0}", response.toString());
-            }
-        } catch (IOException exception) {
-            throw new RuntimeException("Error while contacting Tuleap server", exception);
-        }
-    }
-
-    @Override
     public void sendBuildStatusWithWarningLog(String repositoryId, String commitReference, TuleapBuildStatus status, TuleapAccessToken token) {
         Request request;
 

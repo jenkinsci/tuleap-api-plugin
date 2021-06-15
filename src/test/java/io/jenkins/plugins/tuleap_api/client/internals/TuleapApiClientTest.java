@@ -443,7 +443,6 @@ public class TuleapApiClientTest {
         when(response.isSuccessful()).thenReturn(true);
 
         tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
-        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
     }
 
     @Test
@@ -459,22 +458,6 @@ public class TuleapApiClientTest {
         when(response.isSuccessful()).thenReturn(true);
 
         tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
-        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
-    }
-
-    @Test
-    public void testItPostTheBuildResultWithoutErrorWhenTheResponseIsNotSuccessful() throws IOException {
-        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
-        StringCredentials stringCredentials = this.getStringCredentialsStubClass();
-        Call call = mock(Call.class);
-        Response response = mock(Response.class);
-
-        when(client.newCall(any())).thenReturn(call);
-        when(call.execute()).thenReturn(response);
-        when(response.isSuccessful()).thenReturn(false);
-
-        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, tuleapAccessToken);
-        tuleapApiClient.sendBuildStatusWithWarningLog("10", "518151ezze", TuleapBuildStatus.success, stringCredentials);
     }
 
     private TuleapAccessToken getTuleapAccessTokenStubClass() {
