@@ -4,16 +4,14 @@ import com.cloudbees.plugins.credentials.CredentialsDescriptor;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
-import io.jenkins.plugins.tuleap_api.client.GitCommit;
-import io.jenkins.plugins.tuleap_api.client.Project;
-import io.jenkins.plugins.tuleap_api.client.UserGroup;
+import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.GitCommitEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.ProjectEntity;
-import io.jenkins.plugins.tuleap_api.client.internals.entities.UserGroupEntity;
-import io.jenkins.plugins.tuleap_api.deprecated_client.api.TuleapGitCommit;
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.FileContentNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.TreeNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.internals.entities.*;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessTokenImpl;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
@@ -411,6 +409,130 @@ public class TuleapApiClientTest {
 
         assertEquals(expectedGitCommit.getHash(), gitCommit.getHash());
         assertEquals(expectedGitCommit.getCommitDate(), gitCommit.getCommitDate());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsExceptionWhenTheTreePathCannotBeRetrieved() throws IOException, TreeNotFoundException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(400);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getTree("10", "master", "some/unknown/path", tuleapAccessToken);
+    }
+
+    @Test(expected = TreeNotFoundException.class)
+    public void itThrowsExceptionWhenTheTreePathIsNotFound() throws IOException, TreeNotFoundException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(404);
+
+        tuleapApiClient.getTree("10", "master", "some/unknown/path", tuleapAccessToken);
+
+        verify(response, never()).isSuccessful();
+    }
+
+    @Test
+    public void itReturnsTheWantedGitTreeInformation() throws IOException, TreeNotFoundException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_tree_payload.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string())
+            .thenReturn(jsonGitTreePayload);
+
+        TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
+
+        GitTreeContent file1 = new GitTreeContentEntity("1c9c91a94db210c1f686dfd5d67f81813e02647b", "Jenkinsfile", "Jenkinsfile", "blob", "100644");
+        GitTreeContent file2 = new GitTreeContentEntity("706530ef3efed3fe242033d0458c28707a19a3ec", "README", "README", "blob", "120000");
+        GitTreeContent folder = new GitTreeContentEntity("699b379c93fbd7fc3c0b175ff7960ee9a475b1b6", "doc", "doc", "tree", "040000");
+
+        List<GitTreeContent> expectedTreeContent = ImmutableList.of(file1, file2, folder);
+        List<GitTreeContent> actualTreeContent = tuleapApiClient.getTree("4", "master", "", accessToken);
+
+        assertEquals(expectedTreeContent.size(), actualTreeContent.size());
+
+        expectedTreeContent.forEach( expectedContent -> {
+
+            GitTreeContent content = actualTreeContent.stream()
+                .filter(actualContent -> expectedContent.getId().equals(actualContent.getId()))
+                .findFirst()
+                .orElseThrow(RuntimeException::new);
+
+            assertEquals(expectedContent.getName(), content.getName());
+            assertEquals(expectedContent.getPath(), content.getPath());
+            assertEquals(expectedContent.getMode(), content.getMode());
+            assertEquals(expectedContent.getType(), content.getType());
+        });
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsExceptionWhenTheFilePathCannotBeRetrieved() throws IOException, FileContentNotFoundException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(400);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getFileContent("10", "master", "some/unknown/path", tuleapAccessToken);
+    }
+
+    @Test(expected = FileContentNotFoundException.class)
+    public void itThrowsExceptionWhenTheFileIsNotFound() throws IOException, FileContentNotFoundException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(404);
+
+        tuleapApiClient.getFileContent("10", "master", "some/unknown/path", tuleapAccessToken);
+
+        verify(response, never()).isSuccessful();
+    }
+
+    @Test
+    public void itReturnsTheWantedGitFileContentInformation() throws IOException, TreeNotFoundException, FileContentNotFoundException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_file_content_payload.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string())
+            .thenReturn(jsonGitTreePayload);
+
+        TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
+
+        GitFileContent expectedFileContent = new GitFileContentEntity("base64", 10, "Naha", "TwoBro/Naha", "cGlwZWxpbmUgewog==");
+        GitFileContent actualFileContent = tuleapApiClient.getFileContent("4", "master", "", accessToken);
+        assertEquals(expectedFileContent.getContent(), actualFileContent.getContent());
+        assertEquals(expectedFileContent.getEncoding(), actualFileContent.getEncoding());
+        assertEquals(expectedFileContent.getName(), actualFileContent.getName());
+        assertEquals(expectedFileContent.getPath(), actualFileContent.getPath());
+        assertEquals(expectedFileContent.getSize(), actualFileContent.getSize());
     }
 
 
