@@ -1,5 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client;
 
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.TreeNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
@@ -19,5 +20,7 @@ public interface GitApi {
 
     GitCommit getCommit(String repositoryId, String commitReference, TuleapAccessToken token);
 
-    List<GitTreeContent> getTree(String repositoryId, String commitReference, String path, TuleapAccessToken token);
+    List<GitTreeContent> getTree(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws TreeNotFoundException;
+
+
 }

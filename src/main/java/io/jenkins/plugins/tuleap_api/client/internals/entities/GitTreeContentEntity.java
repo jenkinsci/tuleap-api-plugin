@@ -8,7 +8,7 @@ public class GitTreeContentEntity implements GitTreeContent {
     private final String id;
     private final String name;
     private final String path;
-    private final String type;
+    private final ContentType type;
     private final String mode;
 
 
@@ -22,10 +22,21 @@ public class GitTreeContentEntity implements GitTreeContent {
         this.id = id;
         this.name = name;
         this.path = path;
-        this.type = type;
         this.mode = mode;
+        this.type = getComputedType(type);
     }
 
+    private ContentType getComputedType(String type) {
+        if ("tree".equals(type)) {
+            return ContentType.TREE;
+        }
+
+        if ("120000".equals(this.mode)) {
+            return ContentType.SYMLINK;
+        }
+
+        return ContentType.BLOB;
+    }
 
     @Override
     public String getId() {
@@ -43,7 +54,7 @@ public class GitTreeContentEntity implements GitTreeContent {
     }
 
     @Override
-    public String getType() {
+    public ContentType getType() {
         return type;
     }
 
