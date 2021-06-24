@@ -12,7 +12,7 @@ jobs:
   tests-with-coverage:
     strategy:
       matrix:
-        os: ["windows-2019", "ubuntu-18.04"]
+        os: ["windows-2019", "ubuntu-20.04"]
     name: Tests (${{ matrix.os }}) with coverage
     runs-on: ${{ matrix.os }}
     steps:
