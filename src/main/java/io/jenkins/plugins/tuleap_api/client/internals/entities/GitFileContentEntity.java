@@ -3,7 +3,7 @@ package io.jenkins.plugins.tuleap_api.client.internals.entities;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.tuleap_api.client.GitFileContent;
 
-public class GitFileContentEntity implements GitFileContent{
+public class GitFileContentEntity implements GitFileContent {
 
     private final String encoding;
     private final Integer size;

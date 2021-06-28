@@ -1,5 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client;
 
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.FileContentNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.exceptions.git.TreeNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.TuleapBuildStatus;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
@@ -22,5 +23,5 @@ public interface GitApi {
 
     List<GitTreeContent> getTree(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws TreeNotFoundException;
 
-
+    GitFileContent getFileContent(String repositoryId, String path, String commitReference, TuleapAccessToken token) throws FileContentNotFoundException;
 }
