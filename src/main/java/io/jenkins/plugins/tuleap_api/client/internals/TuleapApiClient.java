@@ -10,6 +10,8 @@ import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.exceptions.ProjectNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.FileContentNotFoundException;
+import io.jenkins.plugins.tuleap_api.client.exceptions.git.TreeNotFoundException;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.*;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
@@ -349,6 +351,73 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             return this.objectMapper.readValue(
                 Objects.requireNonNull(response.body()).string(),
                 GitCommitEntity.class
+            );
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public List<GitTreeContent> getTree(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws TreeNotFoundException {
+        HttpUrl urlGetTree = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.TREE))
+            .newBuilder()
+            .addEncodedQueryParameter("path", path)
+            .addEncodedQueryParameter("ref", commitReference)
+            .build();
+
+        Request request = new Request.Builder()
+            .url(urlGetTree)
+            .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+            .get()
+            .build();
+
+        try (final Response response = this.client.newCall(request).execute()) {
+            if (response.code() == 404) {
+                throw new TreeNotFoundException();
+            }
+
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            return new ArrayList<>(this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                new TypeReference<List<GitTreeContentEntity>>() {
+                }
+            ));
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+    public GitFileContent getFileContent(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws FileContentNotFoundException {
+        HttpUrl urlGetFile = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.FILES))
+            .newBuilder()
+            .addEncodedQueryParameter("path_to_file", path)
+            .addEncodedQueryParameter("ref", commitReference)
+            .build();
+
+        Request request = new Request.Builder()
+            .url(urlGetFile)
+            .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+            .get()
+            .build();
+
+        try (final Response response = this.client.newCall(request).execute()) {
+            if (response.code() == 404) {
+                throw new FileContentNotFoundException();
+            }
+
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            return this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                GitFileContentEntity.class
             );
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);

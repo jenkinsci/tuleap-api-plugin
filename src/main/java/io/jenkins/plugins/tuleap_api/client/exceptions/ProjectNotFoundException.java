@@ -1,7 +1,5 @@
 package io.jenkins.plugins.tuleap_api.client.exceptions;
 
-import okhttp3.Response;
-
 public class ProjectNotFoundException extends Exception {
     private final String projectShortname;
 
