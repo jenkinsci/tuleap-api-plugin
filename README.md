@@ -8,7 +8,7 @@ This jenkins plugin provides a client for the Tuleap API. It is the result of th
 [tuleap-gitbranch-source](https://github.com/jenkinsci/tuleap-git-branch-source-plugin/) for separation concerns and reuse in future Jenkins
 plugins for Tuleap.
 
-Works with any recent version of Jenkins >= 2.164.1 (latest LTS preferred).
+Works with any recent version of Jenkins >= 2.190.3 (latest LTS preferred).
 
 ## How to use
 
