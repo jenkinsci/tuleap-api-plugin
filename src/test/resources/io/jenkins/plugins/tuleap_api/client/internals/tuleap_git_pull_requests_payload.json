@@ -1,0 +1,79 @@
+{
+  "collection": [
+    {
+      "id": 1,
+      "title": "add file in pr1",
+      "uri": "pull_requests/1",
+      "repository": {
+        "name": "repo001",
+        "project": {
+          "id": 102,
+          "uri": "projects/102",
+          "label": "alm"
+        },
+        "clone_http_url": "https://tuleap-web.tuleap-aio-dev.docker/plugins/git/alm/repo001.git",
+        "clone_ssh_url": "ssh://gitolite@tuleap-web.tuleap-aio-dev.docker/alm/repo001.git",
+        "id": 4,
+        "uri": "git/4"
+      },
+      "repository_dest": {
+        "name": "repo001",
+        "project": {
+          "id": 102,
+          "uri": "projects/102",
+          "label": "alm"
+        },
+        "clone_http_url": "https://tuleap-web.tuleap-aio-dev.docker/plugins/git/alm/repo001.git",
+        "clone_ssh_url": "ssh://gitolite@tuleap-web.tuleap-aio-dev.docker/alm/repo001.git",
+        "id": 4,
+        "uri": "git/4"
+      },
+      "user_id": 102,
+      "creation_date": "2020-09-14T11:08:50+02:00",
+      "branch_src": "pr1",
+      "branch_dest": "master",
+      "status": "review",
+      "head": {
+        "id": "9e419faf4a8cc2614ae536e995fa0528dad44b01"
+      }
+    },
+    {
+      "id": 2,
+      "title": "new lessage from fork",
+      "uri": "pull_requests/4",
+      "repository": {
+        "name": "u/darwinw/repo001",
+        "project": {
+          "id": 102,
+          "uri": "projects/102",
+          "label": "alm"
+        },
+        "clone_http_url": "https://tuleap-web.tuleap-aio-dev.docker/plugins/git/alm/u/darwinw/repo001.git",
+        "clone_ssh_url": "ssh://gitolite@tuleap-web.tuleap-aio-dev.docker/alm/u/darwinw/repo001.git",
+        "id": 18,
+        "uri": "git/18"
+      },
+      "repository_dest": {
+        "name": "repo001",
+        "project": {
+          "id": 102,
+          "uri": "projects/102",
+          "label": "alm"
+        },
+        "clone_http_url": "https://tuleap-web.tuleap-aio-dev.docker/plugins/git/alm/repo001.git",
+        "clone_ssh_url": "ssh://gitolite@tuleap-web.tuleap-aio-dev.docker/alm/repo001.git",
+        "id": 4,
+        "uri": "git/4"
+      },
+      "user_id": 109,
+      "creation_date": "2021-07-09T09:13:06+02:00",
+      "branch_src": "from-fork",
+      "branch_dest": "pr5",
+      "status": "review",
+      "head": {
+        "id": "95fd78ba6238cfeac8d6a10874353130da04b1d7"
+      }
+    }
+  ],
+  "total_size": 2
+}
