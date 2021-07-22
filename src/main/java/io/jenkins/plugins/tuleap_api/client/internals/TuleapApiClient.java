@@ -429,18 +429,15 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitPullRequest> getPullRequests(String repositoryId, TuleapAccessToken token) {
-        int offset;
-        int limit = PAGE_SIZE;
-        int totalPages = 0;
-        int pageCount = 0;
+        int offset = 0;
 
         List<GitPullRequest> allPullRequests = new ArrayList<>();
-        do {
-            offset = pageCount * limit;
+
+        while (true) {
             HttpUrl urlGetPR = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.PULL_REQUEST))
                 .newBuilder()
                 .addEncodedQueryParameter("query", "{\"status\":\"open\"}")
-                .addEncodedQueryParameter("limit", Integer.toString(limit))
+                .addEncodedQueryParameter("limit", Integer.toString(PAGE_SIZE))
                 .addEncodedQueryParameter("offset", Integer.toString(offset))
                 .build();
 
@@ -455,21 +452,22 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                     throw new InvalidTuleapResponseException(response);
                 }
 
-                if (offset == 0) {
-                    int collectionLength = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
-                    totalPages = collectionLength / limit + ((collectionLength % limit == 0) ? 0 : 1);
-                }
-               GitPullRequests pullRequests =  this.objectMapper.readValue(
+                GitPullRequests pullRequests = this.objectMapper.readValue(
                     Objects.requireNonNull(response.body()).string(),
                     GitPullRequestsEntity.class
                 );
 
                 allPullRequests.addAll(pullRequests.getPullRequests());
+
+                int totalSize = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
+                offset = offset + PAGE_SIZE;
+
+                if (offset >= totalSize) {
+                    return allPullRequests;
+                }
             } catch (InvalidTuleapResponseException | IOException e) {
                 throw new RuntimeException("Error while contacting Tuleap server", e);
             }
-            pageCount++;
-        } while (pageCount < totalPages);
-        return allPullRequests;
+        }
     }
 }
