@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi , TestCampaignApi, GitApi {
+public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi, TestCampaignApi, GitApi {
     private static final Logger LOGGER = Logger.getLogger(TuleapApiClient.class.getName());
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    private static final String COLLECTION_LENGTH_HEADER = "x-pagination-size";
+    private static final int PAGE_SIZE = 50;
 
     private OkHttpClient client;
 
@@ -421,6 +423,51 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             );
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public List<GitPullRequest> getPullRequests(String repositoryId, TuleapAccessToken token) {
+        int offset = 0;
+
+        List<GitPullRequest> allPullRequests = new ArrayList<>();
+
+        while (true) {
+            HttpUrl urlGetPR = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.PULL_REQUEST))
+                .newBuilder()
+                .addEncodedQueryParameter("query", "{\"status\":\"open\"}")
+                .addEncodedQueryParameter("limit", Integer.toString(PAGE_SIZE))
+                .addEncodedQueryParameter("offset", Integer.toString(offset))
+                .build();
+
+            Request request = new Request.Builder()
+                .url(urlGetPR)
+                .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+                .get()
+                .build();
+
+            try (Response response = this.client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new InvalidTuleapResponseException(response);
+                }
+
+                GitPullRequests pullRequests = this.objectMapper.readValue(
+                    Objects.requireNonNull(response.body()).string(),
+                    GitPullRequestsEntity.class
+                );
+
+                allPullRequests.addAll(pullRequests.getPullRequests());
+
+                int totalSize = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
+                offset = offset + PAGE_SIZE;
+
+                if (offset >= totalSize) {
+                    return allPullRequests;
+                }
+            } catch (InvalidTuleapResponseException | IOException e) {
+                throw new RuntimeException("Error while contacting Tuleap server", e);
+            }
         }
     }
 }

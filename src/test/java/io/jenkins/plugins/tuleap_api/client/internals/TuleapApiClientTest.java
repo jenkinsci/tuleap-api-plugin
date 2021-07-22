@@ -510,7 +510,7 @@ public class TuleapApiClientTest {
     }
 
     @Test
-    public void itReturnsTheWantedGitFileContentInformation() throws IOException, TreeNotFoundException, FileContentNotFoundException {
+    public void itReturnsTheWantedGitFileContentInformation() throws IOException, FileContentNotFoundException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
@@ -535,6 +535,59 @@ public class TuleapApiClientTest {
         assertEquals(expectedFileContent.getSize(), actualFileContent.getSize());
     }
 
+    @Test (expected = RuntimeException.class)
+    public void itThrowsAnExceptionIfWeCannotRetrievePullRequest() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getPullRequests("20", this.getTuleapAccessTokenStubClass());
+    }
+
+    @Test
+    public void itReturnsThePullRequests() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_pull_requests_payload.json"), UTF_8.name());
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("x-pagination-size")).thenReturn("2");
+        when(responseBody.string())
+            .thenReturn(jsonGitTreePayload);
+
+        TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
+
+        GitPullRequest pr1 = new GitPullRequestEntity("1", new GitRepositoryReferenceEntity("repo001", 4), new GitRepositoryReferenceEntity("repo001", 4), "pr1", "master");
+        GitPullRequest pr2 = new GitPullRequestEntity("2", new GitRepositoryReferenceEntity("u/darwinw/repo001", 18), new GitRepositoryReferenceEntity("repo001", 4), "from-fork", "pr5");
+
+        List<GitPullRequest> expectedPullRequests = ImmutableList.of(pr1,pr2);
+        List<GitPullRequest> currentPullRequests = this.tuleapApiClient.getPullRequests("4", accessToken);
+
+
+        expectedPullRequests.forEach(expectedPullRequest -> {
+
+            GitPullRequest pullRequest = currentPullRequests.stream()
+                .filter(actualContent -> expectedPullRequest.getId().equals(actualContent.getId()))
+                .findFirst()
+                .orElseThrow(RuntimeException::new);
+
+            assertEquals(expectedPullRequest.getId(), pullRequest.getId());
+            assertEquals(expectedPullRequest.getSourceBranch(), pullRequest.getSourceBranch());
+            assertEquals(expectedPullRequest.getDestinationBranch(), pullRequest.getDestinationBranch());
+            assertEquals(expectedPullRequest.getSourceRepository().getId(), pullRequest.getSourceRepository().getId());
+            assertEquals(expectedPullRequest.getSourceRepository().getName(), pullRequest.getSourceRepository().getName());
+            assertEquals(expectedPullRequest.getDestinationRepository().getName(), pullRequest.getDestinationRepository().getName());
+            assertEquals(expectedPullRequest.getDestinationRepository().getName(), pullRequest.getDestinationRepository().getName());
+        });
+    }
 
     private TuleapAccessToken getTuleapAccessTokenStubClass() {
         return new TuleapAccessToken() {
