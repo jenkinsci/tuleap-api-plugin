@@ -1,0 +1,22 @@
+{
+  "description": "",
+  "reference_src": "95fd78ba6238cfeac8d6a10874353130da04b1d7",
+  "reference_dest": "10c9cddf27ee6cd2ab15b652922c9da7d8cf60fd",
+  "head_reference": "refs/tlpr/4/head",
+  "status": "review",
+  "id": 4,
+  "uri": "pull_requests/4",
+  "repository": {
+    "name": "u/darwinw/repo001",
+    "id": 18
+  },
+  "repository_dest": {
+    "name": "repo001",
+    "id": 4
+  },
+  "branch_src": "from-fork",
+  "branch_dest": "pr5",
+  "head": {
+    "id": "95fd78ba6238cfeac8d6a10874353130da04b1d7"
+  }
+}
