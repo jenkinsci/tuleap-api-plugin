@@ -1,6 +1,6 @@
 package io.jenkins.plugins.tuleap_api.client;
 
-public interface GitPullRequest {
+public interface PullRequest {
     String getId();
 
     GitRepositoryReference getSourceRepository();
@@ -10,6 +10,12 @@ public interface GitPullRequest {
     String getSourceBranch();
 
     String getDestinationBranch();
+
+    String getSourceReference();
+
+    String getDestinationReference();
+
+    String getStatus();
 
     GitHead getHead();
 }
