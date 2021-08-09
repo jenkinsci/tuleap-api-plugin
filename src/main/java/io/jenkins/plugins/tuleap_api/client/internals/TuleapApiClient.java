@@ -248,6 +248,29 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public Project getProjectById(String projectId, TuleapAccessToken token) {
+        final Request request = new Request.Builder()
+            .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId)
+            .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+            .get()
+            .build();
+
+        try (final Response response = this.client.newCall(request).execute()) {
+            if (! response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+
+            return this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                ProjectEntity.class
+            );
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token) {
         final Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId + this.PROJECT_GROUPS)

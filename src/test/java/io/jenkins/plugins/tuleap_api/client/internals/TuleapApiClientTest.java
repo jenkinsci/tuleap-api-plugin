@@ -171,9 +171,9 @@ public class TuleapApiClientTest {
             .thenReturn(jsonUserGroupsPayload2)
             .thenReturn(jsonUserGroupsPayload3);
 
-        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
-        UserGroup userGroup2 = new UserGroupEntity("project_admins", new ProjectEntity("coincoin", 22));
-        UserGroup userGroup3 = new UserGroupEntity("project_members", new ProjectEntity("git-test", 33));
+        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22, "projects/106", "coincoin"));
+        UserGroup userGroup2 = new UserGroupEntity("project_admins", new ProjectEntity("coincoin", 22, "projects/106", "coincoin"));
+        UserGroup userGroup3 = new UserGroupEntity("project_members", new ProjectEntity("git-test", 33, "projects/113", "git-test"));
 
         List<UserGroup> expectedList = Arrays.asList(userGroup1, userGroup2, userGroup3);
 
@@ -210,7 +210,7 @@ public class TuleapApiClientTest {
             .thenReturn(jsonUserMembershipPayload)
             .thenReturn(jsonUserGroupsPayload1);
 
-        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
+        UserGroup userGroup1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22, "projects/106", "coincoin"));
         List<UserGroup> expectedList = Arrays.asList(userGroup1);
 
         List<UserGroup> resultList = this.tuleapApiClient.getUserMembership(this.accessToken);
@@ -235,8 +235,8 @@ public class TuleapApiClientTest {
         when(responseBody.string())
             .thenReturn(projectMembershipPayload);
 
-        UserGroup userMembership1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 106));
-        UserGroup userMembership2 = new UserGroupEntity("atchoum", new ProjectEntity("git-test", 113));
+        UserGroup userMembership1 = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 106, "projects/106", "coincoin"));
+        UserGroup userMembership2 = new UserGroupEntity("atchoum", new ProjectEntity("git-test", 113, "projects/113", "git-test"));
 
         List<UserGroup> expectedList = Arrays.asList(userMembership1, userMembership2);
 
@@ -290,7 +290,7 @@ public class TuleapApiClientTest {
         when(responseBody.string())
             .thenReturn(jsonUserGroupsPayload);
 
-        UserGroup expectedUserGroup = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22));
+        UserGroup expectedUserGroup = new UserGroupEntity("project_members", new ProjectEntity("coincoin", 22, "projects/106", "coincoin"));
         UserGroup resultUserGroup = tuleapApiClient.getUserGroup("106_3", accessToken);
         assertEquals(expectedUserGroup.getGroupName(), resultUserGroup.getGroupName());
         assertEquals(expectedUserGroup.getProjectName(), resultUserGroup.getProjectName());
@@ -632,5 +632,42 @@ public class TuleapApiClientTest {
                 return new TuleapAccessTokenImpl.DescriptorImpl();
             }
         };
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsExceptionWhenTheProjectCannotBeRetrieved() throws IOException, FileContentNotFoundException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(400);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getProjectById("10", tuleapAccessToken);
+    }
+
+    @Test
+    public void itReturnsTheWantedGivenIdProject() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("single_project_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(payload);
+
+        Project project = tuleapApiClient.getProjectById("use-me", tuleapAccessToken);
+
+        assertEquals("use-me", project.getShortname());
+        Integer expectedId = 118;
+        assertEquals(expectedId, project.getId());
+        assertEquals("Use Me", project.getLabel());
+        assertEquals("projects/118", project.getUri());
     }
 }
