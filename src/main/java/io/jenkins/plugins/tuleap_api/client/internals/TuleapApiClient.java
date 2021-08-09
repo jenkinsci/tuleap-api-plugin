@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi, TestCampaignApi, GitApi {
+public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserApi, UserGroupsApi, ProjectApi, TestCampaignApi, GitApi, PullRequestApi {
     private static final Logger LOGGER = Logger.getLogger(TuleapApiClient.class.getName());
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String COLLECTION_LENGTH_HEADER = "x-pagination-size";
@@ -468,6 +468,28 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             } catch (InvalidTuleapResponseException | IOException e) {
                 throw new RuntimeException("Error while contacting Tuleap server", e);
             }
+        }
+    }
+
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public PullRequest getPullRequest(String pullRequestId, TuleapAccessToken token) {
+        Request request = new Request.Builder()
+            .url(this.tuleapConfiguration.getApiBaseUrl() + this.PULL_REQUEST_API + "/" + pullRequestId)
+            .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+            .get()
+            .build();
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new InvalidTuleapResponseException(response);
+            }
+            return this.objectMapper.readValue(
+                Objects.requireNonNull(response.body()).string(),
+                PullRequestEntity.class
+            );
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
         }
     }
 }
