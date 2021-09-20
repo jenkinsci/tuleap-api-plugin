@@ -17,5 +17,7 @@ public interface PullRequest {
 
     String getStatus();
 
+    String getHeadReference();
+
     GitHead getHead();
 }

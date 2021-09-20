@@ -619,7 +619,7 @@ public class TuleapApiClientTest {
 
         TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
 
-        PullRequest expectedPullRequest = new PullRequestEntity("4", new GitRepositoryReferenceEntity("u/darwinw/repo001", 18), new GitRepositoryReferenceEntity("repo001", 4), "from-fork", "pr5","95fd78ba6238cfeac8d6a10874353130da04b1d7","10c9cddf27ee6cd2ab15b652922c9da7d8cf60fd","review", new GitHeadEntity("95fd78ba6238cfeac8d6a10874353130da04b1d7"));
+        PullRequest expectedPullRequest = new PullRequestEntity("4", new GitRepositoryReferenceEntity("u/darwinw/repo001", 18), new GitRepositoryReferenceEntity("repo001", 4), "from-fork", "pr5","95fd78ba6238cfeac8d6a10874353130da04b1d7","10c9cddf27ee6cd2ab15b652922c9da7d8cf60fd","review", "refs/tlpr/4/head", new GitHeadEntity("95fd78ba6238cfeac8d6a10874353130da04b1d7"));
 
         PullRequest currentPullRequest = this.tuleapApiClient.getPullRequest("4", accessToken);
 
@@ -632,6 +632,7 @@ public class TuleapApiClientTest {
         assertEquals(expectedPullRequest.getSourceRepository().getId(), currentPullRequest.getSourceRepository().getId());
         assertEquals(expectedPullRequest.getSourceRepository().getName(), currentPullRequest.getSourceRepository().getName());
         assertEquals(expectedPullRequest.getDestinationRepository().getName(), currentPullRequest.getDestinationRepository().getName());
+        assertEquals(expectedPullRequest.getHeadReference(), currentPullRequest.getHeadReference());
         assertEquals(expectedPullRequest.getHead().getId(), currentPullRequest.getHead().getId());
     }
 

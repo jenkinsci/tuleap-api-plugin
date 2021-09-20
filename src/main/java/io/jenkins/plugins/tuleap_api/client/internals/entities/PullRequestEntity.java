@@ -16,6 +16,7 @@ public class PullRequestEntity implements PullRequest {
     private final String sourceReference;
     private final String destinationReference;
     private final String status;
+    private final String headReference;
     private final GitHeadEntity head;
 
     public PullRequestEntity(
@@ -27,6 +28,7 @@ public class PullRequestEntity implements PullRequest {
         @JsonProperty("reference_src") String sourceReference,
         @JsonProperty("reference_dest") String destinationReference,
         @JsonProperty("status") String status,
+        @JsonProperty("head_reference") String headReference,
         @JsonProperty("head") GitHeadEntity head
     ) {
         this.id = id;
@@ -37,6 +39,7 @@ public class PullRequestEntity implements PullRequest {
         this.sourceReference = sourceReference;
         this.destinationReference = destinationReference;
         this.status = status;
+        this.headReference = headReference;
         this.head = head;
     }
 
@@ -78,6 +81,11 @@ public class PullRequestEntity implements PullRequest {
     @Override
     public String getStatus() {
         return this.status;
+    }
+
+    @Override
+    public String getHeadReference() {
+        return this.headReference;
     }
 
     @Override
