@@ -39,7 +39,7 @@
     },
     {
       "id": 2,
-      "title": "new lessage from fork",
+      "title": "new message from fork",
       "uri": "pull_requests/4",
       "repository": {
         "name": "u/darwinw/repo001",
