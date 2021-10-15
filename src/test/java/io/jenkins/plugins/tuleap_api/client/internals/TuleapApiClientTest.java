@@ -565,8 +565,8 @@ public class TuleapApiClientTest {
 
         TuleapAccessToken accessToken = this.getTuleapAccessTokenStubClass();
 
-        GitPullRequest pr1 = new GitPullRequestEntity("1", new GitRepositoryReferenceEntity("repo001", 4), new GitRepositoryReferenceEntity("repo001", 4), "pr1", "master", new GitHeadEntity("9e419faf4a8cc2614ae536e995fa0528dad44b01"));
-        GitPullRequest pr2 = new GitPullRequestEntity("2", new GitRepositoryReferenceEntity("u/darwinw/repo001", 18), new GitRepositoryReferenceEntity("repo001", 4), "from-fork", "pr5", new GitHeadEntity("95fd78ba6238cfeac8d6a10874353130da04b1d7"));
+        GitPullRequest pr1 = new GitPullRequestEntity("1","add file in pr1", new GitRepositoryReferenceEntity("repo001", 4), new GitRepositoryReferenceEntity("repo001", 4), "pr1", "master", new GitHeadEntity("9e419faf4a8cc2614ae536e995fa0528dad44b01"));
+        GitPullRequest pr2 = new GitPullRequestEntity("2", "new message from fork", new GitRepositoryReferenceEntity("u/darwinw/repo001", 18), new GitRepositoryReferenceEntity("repo001", 4), "from-fork", "pr5", new GitHeadEntity("95fd78ba6238cfeac8d6a10874353130da04b1d7"));
 
         List<GitPullRequest> expectedPullRequests = ImmutableList.of(pr1,pr2);
         List<GitPullRequest> currentPullRequests = this.tuleapApiClient.getPullRequests("4", accessToken);
@@ -580,6 +580,7 @@ public class TuleapApiClientTest {
                 .orElseThrow(RuntimeException::new);
 
             assertEquals(expectedPullRequest.getId(), pullRequest.getId());
+            assertEquals(expectedPullRequest.getTitle(), pullRequest.getTitle());
             assertEquals(expectedPullRequest.getSourceBranch(), pullRequest.getSourceBranch());
             assertEquals(expectedPullRequest.getDestinationBranch(), pullRequest.getDestinationBranch());
             assertEquals(expectedPullRequest.getSourceRepository().getId(), pullRequest.getSourceRepository().getId());
