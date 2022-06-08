@@ -294,6 +294,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitRepository> getGitRepositories(Integer projectId, TuleapAccessToken token) {
         int offset = 0;
         int totalSize;
@@ -538,6 +539,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitBranch> getBranches(String repositoryId, TuleapAccessToken token) {
         int offset = 0;
         int totalSize;
