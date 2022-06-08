@@ -285,11 +285,54 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
             return new ArrayList<>(this.objectMapper.readValue(
                 Objects.requireNonNull(response.body()).string(),
-                new TypeReference<List<MinimalUserGroupEntity>>() {}
+                new TypeReference<List<MinimalUserGroupEntity>>() {
+                }
             ));
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }
+    }
+
+    @Override
+    public List<GitRepository> getGitRepositories(Integer projectId, TuleapAccessToken token) {
+        int offset = 0;
+        int totalSize;
+
+        List<GitRepository> allRepositories = new ArrayList<>();
+
+        do {
+            HttpUrl urlGetProjectRepositories = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId + this.PROJECT_GIT))
+                .newBuilder()
+                .addEncodedQueryParameter("limit", Integer.toString(PAGE_SIZE))
+                .addEncodedQueryParameter("offset", Integer.toString(offset))
+                .build();
+
+            Request request = new Request.Builder()
+                .url(urlGetProjectRepositories)
+                .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+                .get()
+                .build();
+
+            try (Response response = this.client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new InvalidTuleapResponseException(response);
+                }
+
+                GitRepositories repositories = this.objectMapper.readValue(
+                    Objects.requireNonNull(response.body()).string(),
+                    GitRepositoriesEntity.class
+                );
+
+                allRepositories.addAll(repositories.getGitRepositories());
+
+                totalSize = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
+                offset = offset + PAGE_SIZE;
+
+            } catch (InvalidTuleapResponseException | IOException e) {
+                throw new RuntimeException("Error while contacting Tuleap server", e);
+            }
+        } while (offset < totalSize);
+        return allRepositories;
     }
 
     @Override
@@ -300,7 +343,7 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
             request = new Request.Builder()
                 .url(this.tuleapConfiguration.getApiBaseUrl() + this.TEST_CAMPAIGN_API + "/" + campaignId)
                 .addHeader(this.AUTHORIZATION_HEADER, secret.getPlainText())
-                .patch(RequestBody.create(this.objectMapper.writer(SerializationFeature.WRAP_ROOT_VALUE).writeValueAsString(new SendTTMResultsEntity(buildUrl,results)), JSON))
+                .patch(RequestBody.create(this.objectMapper.writer(SerializationFeature.WRAP_ROOT_VALUE).writeValueAsString(new SendTTMResultsEntity(buildUrl, results)), JSON))
                 .build();
         } catch (JsonProcessingException exception) {
             throw new RuntimeException("Error while trying to create request for TTM results", exception);
@@ -492,6 +535,50 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
                 throw new RuntimeException("Error while contacting Tuleap server", e);
             }
         }
+    }
+
+    @Override
+    public List<GitBranch> getBranches(String repositoryId, TuleapAccessToken token) {
+        int offset = 0;
+        int totalSize;
+
+        List<GitBranch> branches = new ArrayList<>();
+
+        do {
+            HttpUrl urlGetPR = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.BRANCHES))
+                .newBuilder()
+                .addEncodedQueryParameter("limit", Integer.toString(PAGE_SIZE))
+                .addEncodedQueryParameter("offset", Integer.toString(offset))
+                .build();
+
+            Request request = new Request.Builder()
+                .url(urlGetPR)
+                .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+                .get()
+                .build();
+
+            try (Response response = this.client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new InvalidTuleapResponseException(response);
+                }
+
+                List<GitBranch> currentPageBranches = new ArrayList<>(this.objectMapper.readValue(
+                    Objects.requireNonNull(response.body()).string(),
+                    new TypeReference<List<GitBranchEntity>>() {
+                    }
+                ));
+
+                branches.addAll(currentPageBranches);
+
+                totalSize = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
+                offset = offset + PAGE_SIZE;
+
+            } catch (InvalidTuleapResponseException | IOException e) {
+                throw new RuntimeException("Error while contacting Tuleap server", e);
+            }
+        } while (offset < totalSize);
+
+        return branches;
     }
 
     @Override

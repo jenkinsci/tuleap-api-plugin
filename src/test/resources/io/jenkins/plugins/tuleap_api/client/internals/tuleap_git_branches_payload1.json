@@ -1,0 +1,38 @@
+[
+  {
+    "name": "pr1",
+    "commit": {
+      "id": "04e78f9352cdd9a2adf71a3f2c4bcb9f03359a59",
+      "author_name": "Coco L'Asticot",
+      "authored_date": "2022-03-31T16:35:15+02:00",
+      "committed_date": "2022-03-31T16:35:15+02:00",
+      "title": "Tonight! on some emission",
+      "message": "I wear a hat, my colleague wears a hat, and the third wears a yellow hat",
+      "author_email": "asticotc@example.com",
+      "author": "Coco L'Ascticot",
+      "html_url": "/plugins/git/alm/repo001?a=commit&h=38dfa09a67d7872d821b6a46eff340bc8ae0af0f",
+      "commit_status": null,
+      "verification": {
+        "signature": null
+      }
+    }
+  },
+  {
+    "name": "master",
+    "commit": {
+      "id": "4ca3f8df4dd86b904da7847dc97cdfac92b55110",
+      "author_name": "Coco L'Asticot",
+      "authored_date": "2022-03-31T16:34:36+02:00",
+      "committed_date": "2022-03-31T16:34:36+02:00",
+      "title": "On Bottom Gear!",
+      "message": "I flex with my hood, my colleague steals some weed from Snoop Dogg, and the third becomes a Soundcloud rapper",
+      "author_email": "asticotc@example.com",
+      "author": "Coco L'Ascticot",
+      "html_url": "/plugins/git/alm/repo001?a=commit&h=38dfa09a67d7872d821b6a46eff340bc8ae0af0f",
+      "commit_status": null,
+      "verification": {
+        "signature": null
+      }
+    }
+  }
+]
