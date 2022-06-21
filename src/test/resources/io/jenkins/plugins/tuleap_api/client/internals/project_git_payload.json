@@ -1,0 +1,36 @@
+{
+  "repositories": [
+    {
+      "id": 1,
+      "uri": "git/1",
+      "name": "Some-repo",
+      "label": "Some-repo",
+      "path": "alm/Some-repo.git",
+      "path_without_project": "",
+      "description": "-- Default description --",
+      "last_update_date": "2022-04-01T17:18:51+02:00",
+      "permissions": null,
+      "server": null,
+      "html_url": "/plugins/git/alm/Some-repo",
+      "default_branch": "master",
+      "additional_information": {
+        "opened_pull_requests": 1
+      }
+    },
+    {
+      "id": 2,
+      "uri": "git/2",
+      "name": "repo-Pouet",
+      "label": "repo-Pouet",
+      "path": "alm/repo-Pouet.git",
+      "path_without_project": "",
+      "description": "-- Default description --",
+      "last_update_date": "2022-05-06T12:22:38+02:00",
+      "permissions": null,
+      "server": null,
+      "html_url": "/plugins/git/alm/repo-Pouet",
+      "default_branch": "main",
+      "additional_information": []
+    }
+  ]
+}

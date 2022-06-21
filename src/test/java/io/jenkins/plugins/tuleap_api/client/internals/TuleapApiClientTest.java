@@ -29,6 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -296,7 +297,7 @@ public class TuleapApiClientTest {
         assertEquals(expectedUserGroup.getProjectName(), resultUserGroup.getProjectName());
     }
 
-    @Test (expected = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void itThrowsAnExceptionWhenProjectsCannotBeRetrieved() throws IOException, ProjectNotFoundException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
@@ -309,7 +310,7 @@ public class TuleapApiClientTest {
         tuleapApiClient.getProjectByShortname("some-project-shortname", accessToken);
     }
 
-    @Test (expected = ProjectNotFoundException.class)
+    @Test(expected = ProjectNotFoundException.class)
     public void itThrowsAProjectNotFoundExceptionIfProjectCannotBeFound() throws IOException, ProjectNotFoundException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
@@ -343,7 +344,7 @@ public class TuleapApiClientTest {
         assertEquals("use-me", project.getShortname());
     }
 
-    @Test (expected = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void itThrowsAnExceptionWhenProjectUserGroupsCannotBeRetrieved() throws IOException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
@@ -466,7 +467,7 @@ public class TuleapApiClientTest {
 
         assertEquals(expectedTreeContent.size(), actualTreeContent.size());
 
-        expectedTreeContent.forEach( expectedContent -> {
+        expectedTreeContent.forEach(expectedContent -> {
 
             GitTreeContent content = actualTreeContent.stream()
                 .filter(actualContent -> expectedContent.getId().equals(actualContent.getId()))
@@ -535,7 +536,7 @@ public class TuleapApiClientTest {
         assertEquals(expectedFileContent.getSize(), actualFileContent.getSize());
     }
 
-    @Test (expected = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void itThrowsAnExceptionIfWeCannotRetrievePullRequest() throws IOException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
@@ -590,7 +591,8 @@ public class TuleapApiClientTest {
             assertEquals(expectedPullRequest.getHead().getId(), pullRequest.getHead().getId());
         });
     }
-    @Test (expected = RuntimeException.class)
+
+    @Test(expected = RuntimeException.class)
     public void itThrowsAnExceptionIfWeCannotRetrieveTheWantedPullRequest() throws IOException {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
@@ -717,5 +719,86 @@ public class TuleapApiClientTest {
         assertEquals(expectedId, project.getId());
         assertEquals("Use Me", project.getLabel());
         assertEquals("projects/118", project.getUri());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsAnExceptionWhenBranchesCannotBeRetrieved() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getBranches("4", this.getTuleapAccessTokenStubClass());
+    }
+
+    @Test
+    public void itReturnsAllTheBranchesFromGitRepository() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_branches_payload1.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("x-pagination-size")).thenReturn("2");
+        when(responseBody.string())
+            .thenReturn(payload);
+
+        List<GitBranch> branches = tuleapApiClient.getBranches("4", tuleapAccessToken);
+
+        assertEquals("2022-03-31T16:35:15+02:00", branches.get(0).getCommit().getCommitDate().toString());
+        assertEquals("04e78f9352cdd9a2adf71a3f2c4bcb9f03359a59", branches.get(0).getCommit().getHash());
+        assertEquals("pr1", branches.get(0).getName());
+
+        assertEquals("2022-03-31T16:34:36+02:00", branches.get(1).getCommit().getCommitDate().toString());
+        assertEquals("4ca3f8df4dd86b904da7847dc97cdfac92b55110", branches.get(1).getCommit().getHash());
+        assertEquals("master", branches.get(1).getName());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsAnExceptionWhenRepositoriesCannotBeRetrieved() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getGitRepositories(4, this.getTuleapAccessTokenStubClass());
+    }
+
+    @Test
+    public void itReturnsAllGitRepositories() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_git_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("x-pagination-size")).thenReturn("2");
+        when(responseBody.string())
+            .thenReturn(payload);
+
+        List<GitRepository> repositories = tuleapApiClient.getGitRepositories(4, tuleapAccessToken);
+
+        assertEquals(1, repositories.get(0).getId().intValue());
+        assertEquals("Some-repo", repositories.get(0).getName());
+        assertEquals("alm/Some-repo.git", repositories.get(0).getPath());
+
+        assertEquals(2, repositories.get(1).getId().intValue());
+        assertEquals("repo-Pouet", repositories.get(1).getName());
+        assertEquals("alm/repo-Pouet.git", repositories.get(1).getPath());
+
     }
 }
