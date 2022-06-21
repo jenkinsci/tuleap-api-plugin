@@ -16,6 +16,7 @@ public interface GitApi {
     String TREE = "/tree";
     String FILES = "/files";
     String PULL_REQUEST = "/pull_requests";
+    String BRANCHES = "/branches";
 
     void sendBuildStatus(String repositoryId, String commitReference, TuleapBuildStatus status, StringCredentials credentials);
 
@@ -28,4 +29,6 @@ public interface GitApi {
     GitFileContent getFileContent(String repositoryId, String path, String commitReference, TuleapAccessToken token) throws FileContentNotFoundException;
 
     List<GitPullRequest> getPullRequests(String repositoryId, TuleapAccessToken token);
+
+    List<GitBranch> getBranches(String repositoryId, TuleapAccessToken token);
 }
