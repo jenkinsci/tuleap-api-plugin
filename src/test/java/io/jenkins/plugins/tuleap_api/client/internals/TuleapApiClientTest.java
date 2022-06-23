@@ -29,7 +29,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -799,6 +798,45 @@ public class TuleapApiClientTest {
         assertEquals(2, repositories.get(1).getId().intValue());
         assertEquals("repo-Pouet", repositories.get(1).getName());
         assertEquals("alm/repo-Pouet.git", repositories.get(1).getPath());
+
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void itThrowsAnExceptionWhenUserProjectCannotBeRetrieved() throws IOException {
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+
+        tuleapApiClient.getUserProjects(this.getTuleapAccessTokenStubClass());
+    }
+
+    @Test
+    public void itReturnsUserProjects() throws IOException {
+        TuleapAccessToken tuleapAccessToken = this.getTuleapAccessTokenStubClass();
+        Call call = mock(Call.class);
+        Response response = mock(Response.class);
+        ResponseBody responseBody = mock(ResponseBody.class);
+        String payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_payload.json"), UTF_8);
+
+        when(client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.code()).thenReturn(200);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("x-pagination-size")).thenReturn("1");
+        when(responseBody.string())
+            .thenReturn(payload);
+
+        List<Project> projects = tuleapApiClient.getUserProjects( tuleapAccessToken);
+
+        assertEquals("use-me", projects.get(0).getShortname());
+        Integer expectedId = 118;
+        assertEquals(expectedId, projects.get(0).getId());
+        assertEquals("Use Me", projects.get(0).getLabel());
+        assertEquals("projects/118", projects.get(0).getUri());
 
     }
 }
