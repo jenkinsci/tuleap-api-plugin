@@ -335,6 +335,50 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         } while (offset < totalSize);
         return allRepositories;
     }
+    @Override
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
+    public List<Project> getUserProjects(TuleapAccessToken token) {
+        int offset = 0;
+        int totalSize;
+
+        List<Project> allProjects = new ArrayList<>();
+
+        do {
+            HttpUrl urlGetUserProjects = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API))
+                .newBuilder()
+                .addEncodedQueryParameter("limit", Integer.toString(PAGE_SIZE))
+                .addEncodedQueryParameter("offset", Integer.toString(offset))
+                .addEncodedQueryParameter("query", PROJECT_MEMBER_OF_QUERY)
+                .build();
+
+            Request request = new Request.Builder()
+                .url(urlGetUserProjects)
+                .addHeader(this.AUTHORIZATION_HEADER, token.getToken().getPlainText())
+                .get()
+                .build();
+
+            try (Response response = this.client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new InvalidTuleapResponseException(response);
+                }
+
+                List<ProjectEntity> projects = new ArrayList<>(this.objectMapper.readValue(
+                    Objects.requireNonNull(response.body()).string(),
+                    new TypeReference<List<ProjectEntity>>() {
+                    }
+                ));
+
+                allProjects.addAll(projects);
+
+                totalSize = Integer.parseInt(Objects.requireNonNull(response.header(COLLECTION_LENGTH_HEADER)));
+                offset = offset + PAGE_SIZE;
+
+            } catch (InvalidTuleapResponseException | IOException e) {
+                throw new RuntimeException("Error while contacting Tuleap server", e);
+            }
+        } while (offset < totalSize);
+        return allProjects;
+    }
 
     @Override
     public void sendTTMResults(String campaignId, String buildUrl, List<String> results, Secret secret) {

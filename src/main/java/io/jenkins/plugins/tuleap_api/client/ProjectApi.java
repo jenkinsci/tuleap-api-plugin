@@ -18,4 +18,5 @@ public interface ProjectApi {
     Project getProjectById(String projectId, TuleapAccessToken token) ;
     List<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token);
     List<GitRepository> getGitRepositories(Integer projectId, TuleapAccessToken token);
+    List<Project> getUserProjects(TuleapAccessToken token);
 }
