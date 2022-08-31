@@ -22,13 +22,14 @@ import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenApi, OpenIDClientApi {
+public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenApi, OpenIDClientApi, WebhookTokenApi {
 
     public static final Logger LOGGER = Logger.getLogger(TuleapAuthenticationApiAuthenticationClient.class.getName());
 
@@ -89,7 +90,8 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
             this.accessTokenValidator.validateAccessTokenBody(accessToken);
             this.accessTokenValidator.validateIDToken(accessToken);
             return accessToken;
-        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException | InvalidIDTokenException exception) {
+        } catch (IOException | InvalidTuleapResponseException | InvalidHeaderException |
+                 InvalidIDTokenException exception) {
             throw new RuntimeException("Error while contacting Tuleap server", exception);
         }
     }
@@ -184,6 +186,28 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
                 OpenIdDiscoveryEntity.class
             );
             return configuration.getIssuer();
+        } catch (IOException | InvalidTuleapResponseException e) {
+            throw new RuntimeException("Error while contacting Tuleap server", e);
+        }
+    }
+
+    @Override
+    public boolean checkWebhookTokenIsValid(String validityToken) {
+        Request req = new Request.Builder()
+            .url(this.tuleapConfiguration.getDomainUrl() + WebhookTokenApi.WEBHOOK_CHECK_API)
+            .post(RequestBody.create(validityToken.getBytes(StandardCharsets.UTF_8)))
+            .build();
+        try (Response response = this.client.newCall(req).execute()) {
+            if (response.code() == 204) {
+                return true;
+            }
+
+            if (response.code() == 403) {
+                return false;
+            }
+
+            throw new InvalidTuleapResponseException(response);
+
         } catch (IOException | InvalidTuleapResponseException e) {
             throw new RuntimeException("Error while contacting Tuleap server", e);
         }

@@ -20,6 +20,7 @@ public class TuleapAuthenticationApiGuiceModule extends AbstractModule {
 
         bind(AccessTokenApi.class).to(TuleapAuthenticationApiAuthenticationClient.class);
         bind(OpenIDClientApi.class).to(TuleapAuthenticationApiAuthenticationClient.class);
+        bind(WebhookTokenApi.class).to(TuleapAuthenticationApiAuthenticationClient.class);
 
         bind(HeaderAuthenticationValidator.class).to(HeaderAuthenticationValidatorImpl.class);
         bind(AccessTokenValidator.class).to(AccessTokenValidatorImpl.class);
