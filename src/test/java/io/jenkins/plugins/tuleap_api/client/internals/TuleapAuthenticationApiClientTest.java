@@ -14,6 +14,7 @@ import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.va
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
+import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import jenkins.model.Jenkins;
@@ -26,7 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -354,5 +355,83 @@ public class TuleapAuthenticationApiClientTest {
         );
 
         assertEquals("https://example.com", authenticationApiClient.getProviderIssuer());
+    }
+
+    @Test
+    public void testItReturnsFalseIfTheWebhookTokenIsInvalid() throws IOException {
+        when(this.tuleapConfiguration.getDomainUrl()).thenReturn("https://tuleap.example.com");
+
+        Response response = mock(Response.class);
+        when(response.code()).thenReturn(403);
+
+        Call call = mock(Call.class);
+        when(this.client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
+            this.pluginHelper,
+            this.client,
+            this.objectMapper,
+            this.jwkProvider,
+            this.tuleapConfiguration,
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
+        );
+
+        String token = "some_token";
+        assertFalse(authenticationApiClient.checkWebhookTokenIsValid(token));
+    }
+
+    @Test
+    public void testItReturnsTrueIfTheWebhookTokenIsValid() throws IOException {
+        when(this.tuleapConfiguration.getDomainUrl()).thenReturn("https://tuleap.example.com");
+
+        Response response = mock(Response.class);
+        when(response.code()).thenReturn(204);
+
+        Call call = mock(Call.class);
+        when(this.client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
+            this.pluginHelper,
+            this.client,
+            this.objectMapper,
+            this.jwkProvider,
+            this.tuleapConfiguration,
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
+        );
+
+        String token = "some_token";
+        assertTrue(authenticationApiClient.checkWebhookTokenIsValid(token));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testItThrowsAnExceptionIfTuleapResponseIsNeitherOKNorKO() throws IOException {
+        when(this.tuleapConfiguration.getDomainUrl()).thenReturn("https://tuleap.example.com");
+
+        Response response = mock(Response.class);
+        when(response.code()).thenReturn(500);
+
+        Call call = mock(Call.class);
+        when(this.client.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+
+        TuleapAuthenticationApiAuthenticationClient authenticationApiClient = new TuleapAuthenticationApiAuthenticationClient(
+            this.pluginHelper,
+            this.client,
+            this.objectMapper,
+            this.jwkProvider,
+            this.tuleapConfiguration,
+            this.headerAuthenticationChecker,
+            this.accessTokenValidator,
+            this.userInfoValidator
+        );
+
+        String token = "some_token";
+        assertFalse(authenticationApiClient.checkWebhookTokenIsValid(token));
     }
 }
