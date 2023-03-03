@@ -30,7 +30,7 @@ Configure Jenkins to accept a tuleap dev environment certificate
 
 ### You have a local java / maven env
 
-Tested with OpenJDK 8
+Tested with OpenJDK 11
 
     $> mvn clean install
     $> cp target/tuleap-branch-source.hpi onto jenkins
