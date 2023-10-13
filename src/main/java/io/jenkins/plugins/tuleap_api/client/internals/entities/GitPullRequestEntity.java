@@ -17,7 +17,7 @@ public class GitPullRequestEntity implements GitPullRequest {
 
     public GitPullRequestEntity(
         @JsonProperty("id") String id,
-        @JsonProperty("title") String title,
+        @JsonProperty("raw_title") String title,
         @JsonProperty("repository") GitRepositoryReferenceEntity sourceRepository,
         @JsonProperty("repository_dest") GitRepositoryReferenceEntity destinationRepository,
         @JsonProperty("branch_src") String sourceBranch,
