@@ -1,6 +1,5 @@
 package io.jenkins.plugins.tuleap_api.deprecated_client.impl;
 
-import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.tuleap_api.deprecated_client.api.*;
@@ -57,7 +56,7 @@ class DefaultClient implements TuleapClient {
         isApiUrlPresent("Checking credentials");
         isCredentialsPresent("Checking credentials");
 
-        final String username = ((StandardUsernamePasswordCredentials) credentials.get()).getUsername();
+        final String username = credentials.get().getUsername();
         final String queryObject = String.format(BY_USERNAME_QUERY_OBJECT_PATTERN, username);
         final String urlEncodedQueryObject = URLEncoder.encode(queryObject, StandardCharsets.UTF_8.displayName());
         final String userApiUrl = apiBaseUrl + TULEAP_API_USER_PATH + QUERY_OBJECT_PARAM + urlEncodedQueryObject;
@@ -80,7 +79,7 @@ class DefaultClient implements TuleapClient {
                 }
             } else {
                 throw new IOException(
-                    "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
+                    "HTTP call error at url: " + req.url() + " " + "with code: " + response.code());
             }
             return false;
         }
@@ -102,7 +101,7 @@ class DefaultClient implements TuleapClient {
         try (Response response = client.newCall(req).execute()) {
             if (!response.isSuccessful())
                 throw new IOException(
-                    "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
+                    "HTTP call error at url: " + req.url() + " " + "with code: " + response.code());
 
             ResponseBody body = response.body();
             if (body != null) {
@@ -156,7 +155,7 @@ class DefaultClient implements TuleapClient {
             }
             if (!response.isSuccessful())
                 throw new IOException(
-                    "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
+                    "HTTP call error at url: " + req.url() + " " + "with code: " + response.code());
 
             ResponseBody body = response.body();
             if (body != null) {
@@ -188,7 +187,7 @@ class DefaultClient implements TuleapClient {
         try (Response response = client.newCall(req).execute()) {
             if (!response.isSuccessful())
                 throw new IOException(
-                    "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
+                    "HTTP call error at url: " + req.url() + " " + "with code: " + response.code());
 
             ResponseBody body = response.body();
             if (body != null) {
@@ -232,7 +231,7 @@ class DefaultClient implements TuleapClient {
         try (Response response = client.newCall(req).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException(
-                    "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
+                    "HTTP call error at url: " + req.url() + " " + "with code: " + response.code());
             }
             ResponseBody responseBody = response.body();
             if (responseBody == null) {
@@ -265,7 +264,7 @@ class DefaultClient implements TuleapClient {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     throw new IOException(
-                        "HTTP call error at url: " + request.url().toString() + " " + "with code: " + response.code());
+                        "HTTP call error at url: " + request.url() + " " + "with code: " + response.code());
                 }
                 if (offset == 0) {
                     int nbMax = 0;
@@ -356,7 +355,7 @@ class DefaultClient implements TuleapClient {
         // If credential is present then it should be StandardUsernamePasswordCredentials otherwise it should have
         // exploded in constructor
         // If not present it's weird as it is clearly not anonymous call so showstopper
-        if (!credentials.isPresent()) {
+        if (credentials.isEmpty()) {
             throw new IllegalArgumentException(message + " requires a valid api url but is missing");
         }
     }

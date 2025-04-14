@@ -14,7 +14,6 @@ import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.va
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.validators.UserInfoValidator;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
-import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidTuleapResponseException;
 import io.jenkins.plugins.tuleap_api.client.internals.helper.PluginHelper;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import jenkins.model.Jenkins;
@@ -28,7 +27,6 @@ import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class TuleapAuthenticationApiClientTest {
