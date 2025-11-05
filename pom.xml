@@ -59,7 +59,7 @@
             <dependency>
                 <groupId>org.checkerframework</groupId>
                 <artifactId>checker-qual</artifactId>
-                <version>3.49.5</version>
+                <version>3.52.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
