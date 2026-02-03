@@ -5,7 +5,6 @@ import com.auth0.jwk.SigningKeyNotFoundException;
 import com.auth0.jwk.UrlJwkProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.authentication.*;
 import io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.AccessTokenEntity;
@@ -23,7 +22,6 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +62,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public AccessToken getAccessToken(
         String codeVerifier,
         String authorizationCode,
@@ -97,7 +94,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public AccessToken refreshToken(AccessToken accessToken, String clientId, Secret clientSecret) {
         RequestBody requestBody = new FormBody.Builder()
             .add("grant_type", "refresh_token")
@@ -147,7 +143,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public UserInfo getUserInfo(AccessToken accessToken) {
         Request req = new Request.Builder()
             .url(this.tuleapConfiguration.getDomainUrl() + OpenIDClientApi.USER_INFO_API)
@@ -171,7 +166,6 @@ public class TuleapAuthenticationApiAuthenticationClient implements AccessTokenA
 
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public String getProviderIssuer() {
         Request req = new Request.Builder()
             .url(this.tuleapConfiguration.getDomainUrl() + OpenIDClientApi.DISCOVERY_API)

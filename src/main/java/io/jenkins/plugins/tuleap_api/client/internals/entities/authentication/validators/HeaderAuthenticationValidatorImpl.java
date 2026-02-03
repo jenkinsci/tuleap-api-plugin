@@ -19,7 +19,7 @@ public class HeaderAuthenticationValidatorImpl implements HeaderAuthenticationVa
             throw new InvalidHeaderException("There is no content type");
         }
 
-        if (!contentType.toLowerCase().equals(CONTENT_TYPE_HEADER_VALUE.toLowerCase())) {
+        if (!contentType.equalsIgnoreCase(CONTENT_TYPE_HEADER_VALUE)) {
             throw new InvalidHeaderException("Bad content type value");
         }
     }
