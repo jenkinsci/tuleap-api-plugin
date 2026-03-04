@@ -7,6 +7,7 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -20,7 +21,6 @@ import io.jenkins.plugins.tuleap_api.client.TuleapApiGuiceModule;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.workflow.steps.*;
-import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -28,6 +28,7 @@ import org.kohsuke.stapler.verb.POST;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.*;
 
 public class TuleapSendTTMResultsStep extends Step {
@@ -64,6 +65,7 @@ public class TuleapSendTTMResultsStep extends Step {
     }
 
     public static class Execution extends SynchronousStepExecution<Void> {
+        @Serial
         private final static long serialVersionUID = 1L;
         private final transient TuleapSendTTMResultsStep tuleapSendTTMResultsStep;
         private final transient TuleapConfiguration tuleapConfiguration;
@@ -95,7 +97,7 @@ public class TuleapSendTTMResultsStep extends Step {
                     "FilePath is null. Please check the configuration."
                 );
             }
-            
+
             logger.println("Retrieving Tuleap API credentials");
             final TuleapAccessToken tuleapAccessToken = CredentialsProvider.findCredentialById(
                 tuleapSendTTMResultsStep.getCredentialId(),
@@ -142,7 +144,7 @@ public class TuleapSendTTMResultsStep extends Step {
             return "tuleapSendTTMResults";
         }
 
-        @NotNull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Send Tuleap Test Management Results";
@@ -154,7 +156,7 @@ public class TuleapSendTTMResultsStep extends Step {
 
             if (context != null && context.hasPermission(Item.CONFIGURE)) {
                 return new StandardListBoxModel().includeMatchingAs(
-                    context instanceof hudson.model.Queue.Task ? ((Queue.Task) context).getDefaultAuthentication() : ACL.SYSTEM,
+                    context instanceof hudson.model.Queue.Task ? ((Queue.Task) context).getDefaultAuthentication2() : ACL.SYSTEM2,
                     context, TuleapAccessToken.class, URIRequirementBuilder.fromUri(apiUri).build(), CredentialsMatchers.instanceOf(TuleapAccessToken.class)).includeEmptyValue();
             }
             return new StandardListBoxModel().includeEmptyValue();
