@@ -7,6 +7,7 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Queue;
@@ -21,13 +22,13 @@ import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import io.jenkins.plugins.tuleap_server_configuration.TuleapConfiguration;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.workflow.steps.*;
-import org.jetbrains.annotations.Nullable;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,6 +63,7 @@ public class TuleapNotifyCommitStatusStep extends Step {
     }
 
     public static class TuleapNotifyCommitStatusStepExecution extends SynchronousStepExecution<Void> {
+        @Serial
         private static final long serialVersionUID = 1L;
         private final transient Run<?, ?> run;
         private final transient TuleapNotifyCommitStatusStep step;
@@ -170,7 +172,7 @@ public class TuleapNotifyCommitStatusStep extends Step {
 
             if (context != null && context.hasPermission(Item.CONFIGURE)) {
                 return new StandardListBoxModel().includeMatchingAs(
-                    context instanceof Queue.Task ? ((Queue.Task) context).getDefaultAuthentication() : ACL.SYSTEM,
+                    context instanceof Queue.Task ? ((Queue.Task) context).getDefaultAuthentication2() : ACL.SYSTEM2,
                     context, StringCredentials.class, URIRequirementBuilder.fromUri(apiUri).build(), CredentialsMatchers.instanceOf(StringCredentials.class)).includeEmptyValue();
             }
             return new StandardListBoxModel().includeEmptyValue();
