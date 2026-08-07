@@ -3,9 +3,9 @@ package io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.v
 import io.jenkins.plugins.tuleap_api.client.authentication.UserInfo;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import okhttp3.Response;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.logging.Logger;
+import hudson.Util;
 
 public class UserInfoValidatorImpl implements UserInfoValidator {
 
@@ -15,7 +15,7 @@ public class UserInfoValidatorImpl implements UserInfoValidator {
 
     @Override
     public void validateUserInfoResponseBody(UserInfo userInfo) throws InvalidHeaderException {
-        if (StringUtils.isBlank(userInfo.getSubject())) {
+        if (Util.fixEmptyAndTrim(userInfo.getSubject()) == null) {
             LOGGER.warning("sub parameter is missing");
             throw new InvalidHeaderException("sub parameter is missing");
         }
