@@ -321,7 +321,7 @@ class DefaultClient implements TuleapClient {
     }
 
     private Function<Ref, TuleapGitBranch> refToOFGitBranch() {
-        return ref -> new TuleapGitBranch(StringUtils.removeStart(ref.getName(), "refs/heads/"),
+        return ref -> new TuleapGitBranch(removeRefsHeadsPrefix(ref.getName()),
                                           ref.getObjectId().getName());
     }
 
@@ -360,4 +360,10 @@ class DefaultClient implements TuleapClient {
             throw new IllegalArgumentException(message + " requires a valid api url but is missing");
         }
     }
+    /** Strips a single leading "refs/heads/", matching Commons Lang's {@code StringUtils.removeStart}. */
+    private static String removeRefsHeadsPrefix(String ref) {
+        final String prefix = "refs/heads/";
+        return ref != null && ref.startsWith(prefix) ? ref.substring(prefix.length()) : ref;
+    }
+
 }

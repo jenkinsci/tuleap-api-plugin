@@ -4,9 +4,9 @@ import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidIDTokenException;
 import okhttp3.Response;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.logging.Logger;
+import hudson.Util;
 
 public class AccessTokenValidatorImpl implements AccessTokenValidator {
 
@@ -21,7 +21,7 @@ public class AccessTokenValidatorImpl implements AccessTokenValidator {
         }
 
         String pragma = response.header("Pragma");
-        if (StringUtils.isBlank(pragma)) {
+        if (Util.fixEmptyAndTrim(pragma) == null) {
             throw new InvalidHeaderException("Pragma header missing");
         }
 
@@ -36,22 +36,22 @@ public class AccessTokenValidatorImpl implements AccessTokenValidator {
             throw new InvalidHeaderException("There is no body");
         }
 
-        if (StringUtils.isBlank(accessToken.getAccessToken())) {
+        if (Util.fixEmptyAndTrim(accessToken.getAccessToken()) == null) {
             throw new InvalidHeaderException("Access token missing");
         }
 
-        if (StringUtils.isBlank(accessToken.getTokenType())) {
+        if (Util.fixEmptyAndTrim(accessToken.getTokenType()) == null) {
             throw new InvalidHeaderException("Token type missing");
         }
 
-        if (StringUtils.isBlank(accessToken.getExpiresIn())) {
+        if (Util.fixEmptyAndTrim(accessToken.getExpiresIn()) == null) {
             throw new InvalidHeaderException("No expiration date returned");
         }
     }
 
     @Override
     public void validateIDToken(AccessToken accessToken) throws InvalidIDTokenException {
-        if (StringUtils.isBlank(accessToken.getIdToken())) {
+        if (Util.fixEmptyAndTrim(accessToken.getIdToken()) == null) {
             throw new InvalidIDTokenException("No id token returned");
         }
     }

@@ -2,9 +2,9 @@ package io.jenkins.plugins.tuleap_api.client.internals.entities.authentication.v
 
 import io.jenkins.plugins.tuleap_api.client.internals.exceptions.InvalidHeaderException;
 import okhttp3.Response;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.logging.Logger;
+import hudson.Util;
 
 public class HeaderAuthenticationValidatorImpl implements HeaderAuthenticationValidator {
 
@@ -15,7 +15,7 @@ public class HeaderAuthenticationValidatorImpl implements HeaderAuthenticationVa
     @Override
     public void validateHeader(Response response) throws InvalidHeaderException {
         String contentType = response.header("Content-type");
-        if (StringUtils.isBlank(contentType)) {
+        if (Util.fixEmptyAndTrim(contentType) == null) {
             throw new InvalidHeaderException("There is no content type");
         }
 
