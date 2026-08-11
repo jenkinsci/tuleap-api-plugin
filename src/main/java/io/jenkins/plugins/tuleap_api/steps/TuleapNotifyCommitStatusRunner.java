@@ -1,11 +1,11 @@
 package io.jenkins.plugins.tuleap_api.steps;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 import hudson.plugins.git.util.BuildData;
 import io.jenkins.plugins.tuleap_api.client.GitApi;
 import io.jenkins.plugins.tuleap_credentials.TuleapAccessToken;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.PrintStream;
@@ -52,7 +52,7 @@ public class TuleapNotifyCommitStatusRunner {
         );
     }
 
-    @NotNull
+    @NonNull
     private BuildData retrieveGitData(PrintStream logger, Run run) {
         logger.println("Retrieving Git Data");
         final BuildData gitData = run.getAction(BuildData.class);

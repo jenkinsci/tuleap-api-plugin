@@ -5,7 +5,6 @@ import okhttp3.Response;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 public class HeaderAuthenticationCheckerImplTest {
 
