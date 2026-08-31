@@ -104,14 +104,7 @@ class DefaultClient implements TuleapClient {
                 throw new IOException(
                     "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
 
-            ResponseBody body = response.body();
-            if (body != null) {
-//                TuleapApi api = parse(body.string(), TuleapApi.class);
-                //API has changed no version number provided anymore :(
-                //return "1".equals(api.getApiVersion());
-                return true;
-            }
-            return false;
+            return true;
         } catch (IOException e) {
             throw new IOException("Retrieve current api encounter error", e);
         }
@@ -190,11 +183,7 @@ class DefaultClient implements TuleapClient {
                 throw new IOException(
                     "HTTP call error at url: " + req.url().toString() + " " + "with code: " + response.code());
 
-            ResponseBody body = response.body();
-            if (body != null) {
-                return Optional.ofNullable(parse(body.string(), TuleapProject.class));
-            }
-            return Optional.empty();
+            return Optional.ofNullable(parse(response.body().string(), TuleapProject.class));
         } catch (IOException e) {
             throw new IOException("GetProject encounter error", e);
         }
@@ -301,11 +290,7 @@ class DefaultClient implements TuleapClient {
             .get()
             .build();
         try (Response response = client.newCall(request).execute()) {
-            ResponseBody body = response.body();
-            if (body != null) {
-                return Optional.ofNullable(parse(body.string(), TuleapFileContent.class));
-            }
-            return Optional.empty();
+            return Optional.ofNullable(parse(response.body().string(), TuleapFileContent.class));
         } catch (IOException e) {
             throw new IOException("getJenkinsFile encounter error", e);
         }
