@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.inject.Inject;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
@@ -65,7 +64,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<AccessKeyScope> getAccessKeyScopes(Secret secret) {
         Request request = new Request.Builder()
             .url(tuleapConfiguration.getApiBaseUrl() + this.ACCESS_KEY_API + this.ACCESS_KEY_SELF_ID)
@@ -89,7 +87,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public User getUserForAccessKey(Secret secret) {
         Request request = new Request.Builder()
             .url(tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID)
@@ -115,7 +112,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
      */
     @Deprecated
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<UserGroup> getUserMembershipName(AccessToken accessToken) {
         LOGGER.info("You are using a deprecated method. Please upgrade your Tuleap and use getUserMembership() instead. ");
 
@@ -147,15 +143,12 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         }
 
         List<UserGroup> memberships = new ArrayList<>();
-        userMembershipIds.forEach(groupId -> {
-            memberships.add(this.getUserGroup(groupId, accessToken));
-        });
+        userMembershipIds.forEach(groupId -> memberships.add(this.getUserGroup(groupId, accessToken)));
 
         return memberships;
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<UserGroup> getUserMembership(AccessToken accessToken) {
         HttpUrl urlUserMembership = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.USER_API + this.USER_SELF_ID + this.USER_MEMBERSHIP))
             .newBuilder()
@@ -191,7 +184,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public UserGroup getUserGroup(String groupId, AccessToken accessToken) {
         Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.USER_GROUPS_API + "/" + groupId)
@@ -213,7 +205,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public Project getProjectByShortname(String shortname, AccessToken token) throws ProjectNotFoundException {
         final HttpUrl url = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API))
             .newBuilder()
@@ -234,7 +225,8 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
 
             final List<ProjectEntity> projects = this.objectMapper.readValue(
                 Objects.requireNonNull(response.body()).string(),
-                new TypeReference<List<ProjectEntity>>() {}
+                new TypeReference<>() {
+                }
             );
 
             return projects
@@ -247,7 +239,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public Project getProjectById(String projectId, TuleapAccessToken token) {
         final Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId)
@@ -270,7 +261,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<UserGroup> getProjectUserGroups(Integer projectId, AccessToken token) {
         final Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.PROJECT_API + "/" + projectId + this.PROJECT_GROUPS)
@@ -294,7 +284,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitRepository> getGitRepositories(Integer projectId, TuleapAccessToken token) {
         int offset = 0;
         int totalSize;
@@ -336,7 +325,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
         return allRepositories;
     }
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<Project> getUserProjects(TuleapAccessToken token) {
         int offset = 0;
         int totalSize;
@@ -449,7 +437,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public GitCommit getCommit(String repositoryId, String commitReference, TuleapAccessToken token) {
         Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.COMMITS + "/" + commitReference)
@@ -471,7 +458,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitTreeContent> getTree(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws TreeNotFoundException {
         HttpUrl urlGetTree = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.TREE))
             .newBuilder()
@@ -505,7 +491,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public GitFileContent getFileContent(String repositoryId, String commitReference, String path, TuleapAccessToken token) throws FileContentNotFoundException {
         HttpUrl urlGetFile = Objects.requireNonNull(HttpUrl.parse(this.tuleapConfiguration.getApiBaseUrl() + this.GIT_API + "/" + repositoryId + this.FILES))
             .newBuilder()
@@ -538,7 +523,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitPullRequest> getPullRequests(String repositoryId, TuleapAccessToken token) {
         int offset = 0;
 
@@ -583,7 +567,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public List<GitBranch> getBranches(String repositoryId, TuleapAccessToken token) {
         int offset = 0;
         int totalSize;
@@ -628,7 +611,6 @@ public class TuleapApiClient implements TuleapAuthorization, AccessKeyApi, UserA
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // see https://github.com/spotbugs/spotbugs/issues/651
     public PullRequest getPullRequest(String pullRequestId, TuleapAccessToken token) {
         Request request = new Request.Builder()
             .url(this.tuleapConfiguration.getApiBaseUrl() + this.PULL_REQUEST_API + "/" + pullRequestId)

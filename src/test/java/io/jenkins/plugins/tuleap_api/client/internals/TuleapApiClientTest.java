@@ -5,6 +5,7 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.Secret;
 import io.jenkins.plugins.tuleap_api.client.*;
 import io.jenkins.plugins.tuleap_api.client.authentication.AccessToken;
@@ -20,18 +21,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class TuleapApiClientTest {
@@ -99,7 +99,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String json_payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("access_key_payload.json"));
+        String json_payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("access_key_payload.json"), StandardCharsets.UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -127,7 +127,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String json_payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_payload.json"));
+        String json_payload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_payload.json"), StandardCharsets.UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -156,10 +156,10 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonUserMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_membership_payload.json"), UTF_8.name());
-        String jsonUserGroupsPayload1 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8.name());
-        String jsonUserGroupsPayload2 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload2.json"), UTF_8.name());
-        String jsonUserGroupsPayload3 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload3.json"), UTF_8.name());
+        String jsonUserMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_membership_payload.json"), UTF_8);
+        String jsonUserGroupsPayload1 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8);
+        String jsonUserGroupsPayload2 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload2.json"), UTF_8);
+        String jsonUserGroupsPayload3 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload3.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -199,8 +199,8 @@ public class TuleapApiClientTest {
         when(response.code()).thenReturn(400);
         when(response.isSuccessful()).thenReturn(true);
 
-        String jsonUserMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_membership_payload.json"), UTF_8.name());
-        String jsonUserGroupsPayload1 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8.name());
+        String jsonUserMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_membership_payload.json"), UTF_8);
+        String jsonUserGroupsPayload1 = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -225,7 +225,7 @@ public class TuleapApiClientTest {
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
 
-        String projectMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_membership_payload.json"), UTF_8.name());
+        String projectMembershipPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("project_membership_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -281,7 +281,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonUserGroupsPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8.name());
+        String jsonUserGroupsPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("user_groups_payload1.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -393,7 +393,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonGitCommitPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_commit_payload.json"), UTF_8.name());
+        String jsonGitCommitPayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_commit_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -445,7 +445,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_tree_payload.json"), UTF_8.name());
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_tree_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -514,7 +514,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_file_content_payload.json"), UTF_8.name());
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_file_content_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -552,7 +552,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_pull_requests_payload.json"), UTF_8.name());
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_git_pull_requests_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -608,7 +608,7 @@ public class TuleapApiClientTest {
         Call call = mock(Call.class);
         Response response = mock(Response.class);
         ResponseBody responseBody = mock(ResponseBody.class);
-        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_pull_request_payload.json"), UTF_8.name());
+        String jsonGitTreePayload = IOUtils.toString(TuleapApiClientTest.class.getResourceAsStream("tuleap_pull_request_payload.json"), UTF_8);
 
         when(client.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(response);
@@ -640,31 +640,31 @@ public class TuleapApiClientTest {
 
     private TuleapAccessToken getTuleapAccessTokenStubClass() {
         return new TuleapAccessToken() {
-            @NotNull
+            @NonNull
             @Override
             public Secret getToken() {
                 return Secret.fromString("my_t0k3n");
             }
 
-            @NotNull
+            @NonNull
             @Override
             public Secret getPassword() {
                 return Secret.fromString("d0lph1n");
             }
 
-            @NotNull
+            @NonNull
             @Override
             public String getDescription() {
                 return "";
             }
 
-            @NotNull
+            @NonNull
             @Override
             public String getId() {
                 return "";
             }
 
-            @NotNull
+            @NonNull
             @Override
             public String getUsername() {
                 return "Coco";
@@ -675,7 +675,7 @@ public class TuleapApiClientTest {
                 return CredentialsScope.SYSTEM;
             }
 
-            @NotNull
+            @NonNull
             @Override
             public CredentialsDescriptor getDescriptor() {
                 return new TuleapAccessTokenImpl.DescriptorImpl();
