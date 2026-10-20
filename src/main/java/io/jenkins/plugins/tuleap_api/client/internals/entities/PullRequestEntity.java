@@ -2,7 +2,6 @@ package io.jenkins.plugins.tuleap_api.client.internals.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.tuleap_api.client.GitHead;
-import io.jenkins.plugins.tuleap_api.client.GitPullRequest;
 import io.jenkins.plugins.tuleap_api.client.GitRepositoryReference;
 import io.jenkins.plugins.tuleap_api.client.PullRequest;
 
